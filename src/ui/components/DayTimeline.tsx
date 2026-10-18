@@ -221,7 +221,7 @@ export function DayTimeline({
             const cx = x(e.expectedAt)
             const cy = laneY(z)
             const tone =
-              e.status === 'missing' ? 'var(--expected)' : e.status === 'uncertain' ? 'var(--unknown)' : 'var(--text-3)'
+              e.status === 'missing' ? 'var(--expected)' : e.status === 'uncertain' ? 'var(--unknown)' : 'var(--ink-3)'
             const active = selectedId === e.id
             return (
               <g key={e.id} className={dimExp(e)}>

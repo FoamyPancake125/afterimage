@@ -110,9 +110,9 @@ export function FloorPlan({
                 width={room.w}
                 height={room.h}
                 rx="1"
-                fill={room.exterior ? 'transparent' : 'var(--panel)'}
+                fill={room.exterior ? 'transparent' : 'var(--surface)'}
                 stroke={
-                  missing.length ? 'var(--expected)' : uncertain.length ? 'var(--unknown)' : 'var(--line)'
+                  missing.length ? 'var(--expected)' : uncertain.length ? 'var(--unknown)' : 'var(--rule)'
                 }
                 strokeWidth={missing.length || uncertain.length ? 0.7 : 0.45}
                 strokeDasharray={room.exterior ? '2 1.6' : missing.length ? '2.4 1.6' : undefined}
@@ -168,7 +168,7 @@ export function FloorPlan({
                     cx={room.x + room.w - 6}
                     cy={room.y + 7}
                     r="2.9"
-                    fill="var(--bg)"
+                    fill="var(--paper)"
                     stroke="var(--expected)"
                     strokeWidth="0.75"
                     strokeDasharray="1.5 1.5"

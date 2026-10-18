@@ -28,6 +28,7 @@ import {
 
 export type Surface = 'console' | 'firetv' | 'alexa' | 'ring'
 export type ConsoleView = 'dial' | 'plan'
+export type Theme = 'light' | 'dark'
 
 export type { InjectableEvent }
 export { INJECTABLE }
@@ -107,6 +108,9 @@ interface Store {
   inject: (e: InjectableEvent) => void
   resetSim: () => void
 
+  theme: Theme
+  setTheme: (t: Theme) => void
+
   /** Short description of what the last action changed. */
   lastChange: string | null
   /** Recent verdict changes, newest first, for the live feed. */
@@ -137,8 +141,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [playing, setPlaying] = useState(false)
   const [speedMin, setSpeedMin] = useState<number>(6)
   const [lastChange, setLastChange] = useState<string | null>(null)
+  const [theme, setTheme] = useState<Theme>('light')
   const [flips, setFlips] = useState<Flip[]>([])
   const scrubStart = useRef<number | null>(null)
+
+  // Light is the default on purpose. A dark dashboard is the house style of
+  // every monitoring product there is, and this one is meant to read like a
+  // printed record rather than a control room.
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+  }, [theme])
 
   const now = DEMO_NOW + clockOffsetMin * MIN
   const outages = useMemo(
@@ -370,6 +382,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     injected,
     inject,
     resetSim,
+    theme,
+    setTheme,
     lastChange,
     flips,
   }

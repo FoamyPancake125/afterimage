@@ -111,7 +111,7 @@ export function FireTV() {
               <div className="mono" style={{ fontSize: '3.6cqh' }}>
                 {clockLabel(world.now)}
               </div>
-              <div style={{ fontSize: '1.8cqh', color: 'var(--text-3)' }}>
+              <div style={{ fontSize: '1.8cqh', color: 'var(--ink-3)' }}>
                 departure from normal {departure}/100
               </div>
             </div>
@@ -201,7 +201,7 @@ export function FireTV() {
               {links.map((c) => (
                 <div key={c.id} className="tv-ev-link">
                   <p style={{ margin: 0, fontSize: '2.2cqh', fontWeight: 550 }}>{c.hypothesis}</p>
-                  <p style={{ margin: '0.6cqh 0 0', fontSize: '1.85cqh', color: 'var(--text-3)' }}>
+                  <p style={{ margin: '0.6cqh 0 0', fontSize: '1.85cqh', color: 'var(--ink-3)' }}>
                     {c.basis}
                   </p>
                 </div>

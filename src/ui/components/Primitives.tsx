@@ -51,7 +51,7 @@ export function SupportRing({
   const stroke = `var(--${tone === 'quiet' ? 'text-3' : tone})`
   return (
     <svg className="support-ring" width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--line)" strokeWidth="2.5" />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--rule)" strokeWidth="2.5" />
       <circle
         cx={size / 2}
         cy={size / 2}
@@ -68,7 +68,7 @@ export function SupportRing({
         y={size / 2 + 3.4}
         textAnchor="middle"
         fontSize={size * 0.3}
-        fill="var(--text-2)"
+        fill="var(--ink-2)"
         fontFamily="var(--mono)"
       >
         {Math.round(value * 100)}
@@ -115,5 +115,5 @@ export function severityColor(severity: number): string {
   if (severity >= 65) return 'var(--critical)'
   if (severity >= 35) return 'var(--expected)'
   if (severity >= 10) return 'var(--unknown)'
-  return 'var(--text-3)'
+  return 'var(--ink-3)'
 }

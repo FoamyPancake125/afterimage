@@ -114,9 +114,9 @@ export function RingSim() {
             <span>{lastChange}</span>
           </div>
         ) : (
-          <div className="diffbar" style={{ borderColor: 'var(--line)', background: 'var(--panel)' }}>
+          <div className="diffbar" style={{ borderColor: 'var(--rule)', background: 'var(--surface)' }}>
             <Pill tone="quiet">Idle</Pill>
-            <span style={{ color: 'var(--text-2)' }}>
+            <span style={{ color: 'var(--ink-2)' }}>
               Push an event, move the clock, or blind a camera. Every verdict on every surface is
               recomputed from the stream.
             </span>

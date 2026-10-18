@@ -199,7 +199,7 @@ export function AlexaPlus() {
                 style={{
                   margin: 0,
                   fontSize: 11.5,
-                  color: 'var(--text-2)',
+                  color: 'var(--ink-2)',
                   whiteSpace: 'pre-wrap',
                   lineHeight: 1.65,
                 }}

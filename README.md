@@ -199,6 +199,33 @@ Honest list, since the demo is reproducible and reviewers will look:
 
 ---
 
+## On the way it looks
+
+Three decisions, and the reasoning behind each, since they are all departures
+from what a monitoring product normally looks like.
+
+**Light by default.** Dark is the house style of the entire category, and a
+default is exactly what makes interfaces interchangeable. This one is meant to
+read like a printed record rather than a control room. Dark is one click away
+in the top right, and it is tuned separately rather than inverted: a warm
+near-black so white text does not halate, signal colours lifted because the
+same hue reads darker against dark, and surfaces carrying depth instead of
+drop shadows.
+
+**Rules instead of cards.** Grouping is done with space and a single hairline.
+A border you notice before the content is too strong, and boxing every element
+is a way of avoiding layout rather than doing it.
+
+**One filled control per view.** Everything else is text. Colour is reserved
+for the only thing colour should carry here, which is whether something was
+observed, expected, or unknowable. Status is a word with a small mark beside
+it, not a coloured chip.
+
+The type is IBM Plex Sans with IBM Plex Mono for every figure, and Source Serif
+4 for the two headlines that carry the argument.
+
+---
+
 ## License
 
 MIT. See [LICENSE](LICENSE).

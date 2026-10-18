@@ -9,6 +9,23 @@ import { Console } from './surfaces/Console.tsx'
 import { FireTV } from './surfaces/FireTV.tsx'
 import { RingSim } from './surfaces/RingSim.tsx'
 
+function MoonIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden>
+      <path d="M12 8.4A5.4 5.4 0 0 1 5.6 2 5.6 5.6 0 1 0 12 8.4z" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function SunIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden>
+      <circle cx="7" cy="7" r="2.9" />
+      <path d="M7 .9v1.6M7 11.5v1.6M1.4 7H3M11 7h1.6M3 3l1.1 1.1M9.9 9.9 11 11M11 3 9.9 4.1M4.1 9.9 3 11" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 const TABS: { id: Surface; label: string; hint: string }[] = [
   { id: 'console', label: 'Console', hint: 'Phone and web' },
   { id: 'firetv', label: 'Fire TV', hint: 'Ten-foot UI' },
@@ -25,7 +42,8 @@ export default function App() {
 }
 
 function Shell() {
-  const { surface, setSurface, world, ghostLayer, setGhostLayer, playing, play, pause } = useStore()
+  const { surface, setSurface, world, ghostLayer, setGhostLayer, playing, play, pause, theme, setTheme } =
+    useStore()
   const departure = dayDeparture(world)
 
   // Two keys worth having under a thumb during a demo. G is the product's whole
@@ -53,7 +71,7 @@ function Shell() {
       <header className="topbar">
         <div className="brand">
           <svg className="brand-glyph" width="18" height="18" viewBox="0 0 16 16" aria-hidden>
-            <circle cx="5.4" cy="8" r="2.1" fill="var(--text)" />
+            <circle cx="5.4" cy="8" r="2.1" fill="var(--ink)" />
             <circle
               cx="11"
               cy="8"
@@ -86,12 +104,20 @@ function Shell() {
 
         <div className="topbar-right">
           <button
-            className={`ghost-toggle${ghostLayer ? ' ghost-toggle--on' : ''}`}
+            className={`icon-btn${ghostLayer ? ' icon-btn--on' : ''}`}
             onClick={() => setGhostLayer(!ghostLayer)}
-            title="Show or hide what should have happened (G)"
+            title="Show or hide what should have happened"
           >
-            <span className="legend-swatch legend-swatch--expected" />
-            afterimages <kbd>G</kbd>
+            <span className="legend-swatch legend-swatch--expected" style={{ marginTop: 0 }} />
+            Afterimages <kbd>G</kbd>
+          </button>
+
+          <button
+            className="icon-btn"
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            title={theme === 'light' ? 'Switch to dark' : 'Switch to light'}
+          >
+            {theme === 'light' ? <MoonIcon /> : <SunIcon />}
           </button>
           <span className="departure">
             <span>departure</span>

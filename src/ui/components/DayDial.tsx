@@ -173,7 +173,8 @@ export function DayDial({
             cy={C}
             r={(R_FIRST + R_HUB) / 2}
             fill="none"
-            stroke="rgba(135,147,160,0.05)"
+            className="dial-night"
+            stroke="currentColor"
             strokeWidth={R_FIRST - R_HUB + RING_W}
             {...arc((R_FIRST + R_HUB) / 2, 1260, 1800)}
           />
@@ -185,8 +186,9 @@ export function DayDial({
               cx={C}
               cy={C}
               r={radiusOf(z)}
+              className="dial-ring"
               fill="none"
-              stroke="rgba(255,255,255,0.028)"
+              stroke="currentColor"
               strokeWidth={RING_W}
             />
           ))}
@@ -197,7 +199,7 @@ export function DayDial({
             cy={C}
             r={R_TRACK}
             fill="none"
-            stroke="var(--line)"
+            stroke="var(--rule)"
             strokeWidth="3"
           />
           <circle
@@ -208,7 +210,7 @@ export function DayDial({
             stroke="var(--observed)"
             strokeWidth="3"
             strokeLinecap="round"
-            opacity="0.75"
+            opacity="0.9"
             {...arc(R_TRACK, 0, nowMin)}
           />
 
@@ -266,7 +268,7 @@ export function DayDial({
                 y1={py(R_TRACK + 6, m)}
                 x2={px(R_TRACK + (major ? 14 : 10), m)}
                 y2={py(R_TRACK + (major ? 14 : 10), m)}
-                stroke="var(--line)"
+                stroke="var(--rule)"
                 strokeWidth={major ? 1.6 : 1}
               />
               {major && (
@@ -292,7 +294,7 @@ export function DayDial({
             y={C - radiusOf(z) + 3.5}
             textAnchor="middle"
             paintOrder="stroke"
-            stroke="var(--bg)"
+            stroke="var(--paper)"
             strokeWidth="4"
             strokeLinejoin="round"
           >
@@ -356,7 +358,7 @@ export function DayDial({
                   ? 'var(--expected)'
                   : e.status === 'uncertain'
                     ? 'var(--unknown)'
-                    : 'var(--text-3)'
+                    : 'var(--ink-3)'
               const active = selectedId === e.id
               const r0 = R_HUB + 4
               const r1 = R_TRACK - 8
@@ -379,7 +381,7 @@ export function DayDial({
                     cx={px(r, m)}
                     cy={py(r, m)}
                     r={active ? 8.5 : 6.6}
-                    fill="var(--bg)"
+                    fill="var(--paper)"
                     stroke={tone}
                     strokeWidth={active ? 2.3 : 1.7}
                     strokeDasharray="3 3"
@@ -404,7 +406,7 @@ export function DayDial({
             })}
 
         {/* Hub */}
-        <circle cx={C} cy={C} r={R_HUB} fill="var(--bg)" stroke="var(--line)" strokeWidth="1" />
+        <circle cx={C} cy={C} r={R_HUB} fill="var(--paper)" stroke="var(--rule)" strokeWidth="1" />
 
         {/* The hand */}
         <line
@@ -412,7 +414,7 @@ export function DayDial({
           y1={C}
           x2={px(R_TRACK - 2, nowMin)}
           y2={py(R_TRACK - 2, nowMin)}
-          stroke="var(--text)"
+          stroke="var(--ink)"
           strokeWidth="1.4"
           opacity="0.75"
         />

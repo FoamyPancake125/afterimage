@@ -146,11 +146,15 @@ export function Console() {
               </button>
             </div>
 
-            <div className="stat-row" style={{ margin: 0 }}>
-              <Stat value={String(missing.length)} label="Did not happen" tone="expected" />
-              <Stat value={String(uncertain.length)} label="Cannot judge" tone="unknown" />
-              <Stat value={String(world.novelties.length)} label="No precedent" tone="expected" />
-              <Stat value={String(departure)} label="Departure" tone={departure > 60 ? 'critical' : 'ok'} />
+            <div className="figures">
+              <Figure value={String(missing.length)} label="did not happen" tone="expected" />
+              <Figure value={String(uncertain.length)} label="cannot judge" tone="unknown" />
+              <Figure value={String(world.novelties.length)} label="no precedent" tone="expected" />
+              <Figure
+                value={String(departure)}
+                label="departure from normal"
+                tone={departure > 60 ? 'critical' : 'ok'}
+              />
             </div>
 
             <div className="switch-row">
@@ -333,17 +337,17 @@ export function Console() {
             <p style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 600 }}>
               {world.household.residentName}, {world.household.residentAge}
             </p>
-            <p style={{ margin: 0, fontSize: 12.5, color: 'var(--text-3)' }}>
+            <p style={{ margin: 0, fontSize: 12.5, color: 'var(--ink-3)' }}>
               Lives alone · {world.household.devices.length} Ring devices ·{' '}
               {world.routines.length} learned routines
             </p>
-            <div style={{ marginTop: 12, borderTop: '1px solid var(--line-soft)', paddingTop: 6 }}>
+            <div style={{ marginTop: 12, borderTop: '1px solid var(--rule-soft)', paddingTop: 6 }}>
               {world.household.circle.map((p) => (
                 <div key={p.name} className="circle-row">
                   <span className="avatar">{p.name[0]}</span>
                   <span>
                     <span style={{ fontSize: 13.5 }}>{p.name}</span>
-                    <span style={{ display: 'block', fontSize: 11.5, color: 'var(--text-3)' }}>
+                    <span style={{ display: 'block', fontSize: 11.5, color: 'var(--ink-3)' }}>
                       {p.relation} · {p.channel}
                     </span>
                   </span>
@@ -358,11 +362,11 @@ export function Console() {
             <span className="panel-title">Ask Alexa+</span>
           </div>
           <div style={{ padding: '12px 16px 15px' }}>
-            <p style={{ margin: '0 0 11px', fontSize: 13, color: 'var(--text-2)' }}>
+            <p style={{ margin: '0 0 11px', fontSize: 13, color: 'var(--ink-2)' }}>
               The same findings, by voice. Every answer is assembled from the structures on this
               page, so the two can never disagree.
             </p>
-            <button className="btn btn--primary" onClick={() => setSurface('alexa')}>
+            <button className="chip" onClick={() => setSurface('alexa')}>
               Ask: “Why did you flag the morning dose?”
             </button>
           </div>
@@ -420,7 +424,7 @@ export function Console() {
               .map((o) => {
                 const d = world.household.devices.find((x) => x.id === o.deviceId)
                 return (
-                  <p key={o.id} style={{ margin: '0 0 8px', fontSize: 12.5, color: 'var(--text-2)' }}>
+                  <p key={o.id} style={{ margin: '0 0 8px', fontSize: 12.5, color: 'var(--ink-2)' }}>
                     <span className="mono" style={{ color: 'var(--unknown)' }}>
                       {clockLabel(o.from)} to {clockLabel(o.to)}
                     </span>{' '}
@@ -460,13 +464,13 @@ function Section({ title, note, children }: { title: string; note?: string; chil
   )
 }
 
-function Stat({ value, label, tone }: { value: string; label: string; tone: string }) {
+function Figure({ value, label, tone }: { value: string; label: string; tone: string }) {
   return (
-    <div className="stat">
-      <div className="stat-value" style={{ color: `var(--${tone})` }}>
+    <div className="figure">
+      <div className="figure-value" style={{ color: value === '0' ? 'var(--ink-3)' : `var(--${tone})` }}>
         {value}
       </div>
-      <div className="stat-label">{label}</div>
+      <div className="figure-label">{label}</div>
     </div>
   )
 }
