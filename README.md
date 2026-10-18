@@ -223,8 +223,8 @@ it, not a coloured chip.
 
 The type is Libre Franklin, a Franklin Gothic and therefore the voice of
 broadsheet newspapers rather than of software, with Newsreader for the two
-headlines that carry the argument and IBM Plex Mono for every figure, so that
-columns of numbers line up and can be compared down the page.
+headlines that carry the argument and DM Mono for every figure, so that columns
+of numbers line up and can be compared down the page. Three faces, no more.
 
 ---
 
