@@ -13,6 +13,7 @@ export { evaluateExpectations, expectationHeadline, routineHistory } from './abs
 export { findNovelties } from './novelty.ts'
 export { correlate } from './correlate.ts'
 export { ask, SUGGESTED_QUESTIONS } from './reason.ts'
+export { buildDayReport, buildFindingsCsv, reportFilename, reportHeadline } from './report.ts'
 export type { Answer, AnswerCard, Intent } from './reason.ts'
 export {
   DEMO_NOW,

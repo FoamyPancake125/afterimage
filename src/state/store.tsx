@@ -25,6 +25,7 @@ import {
   type WorldState,
   type Zone,
 } from '../engine/index.ts'
+import { readPrefs, readUrl, writePrefs, writeUrl } from './url.ts'
 
 export type Surface = 'console' | 'firetv' | 'alexa' | 'ring'
 export type ConsoleView = 'dial' | 'plan'
@@ -110,6 +111,7 @@ interface Store {
 
   theme: Theme
   setTheme: (t: Theme) => void
+  shareLink: () => string
 
   /** Short description of what the last action changed. */
   lastChange: string | null
@@ -126,22 +128,34 @@ const BASE_OUTAGES = buildOutages(DEMO_NOW)
 export const DEMO_MINUTE_OF_DAY = 19 * 60 + 45
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [surface, setSurface] = useState<Surface>('console')
-  const [consoleView, setConsoleView] = useState<ConsoleView>('dial')
+  // The first read of the address bar and of saved preferences happens once,
+  // as lazy initial state, so a deep link lands on the right view rather than
+  // flashing the default and then correcting itself.
+  const initialUrl = useRef(readUrl()).current
+  const initialPrefs = useRef(readPrefs()).current
+
+  const [surface, setSurface] = useState<Surface>(initialUrl.surface ?? 'console')
+  const [consoleView, setConsoleView] = useState<ConsoleView>(initialUrl.view ?? 'dial')
   const [highlight, setHighlight] = useState<Highlight>(NO_HIGHLIGHT)
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [inspectId, setInspectId] = useState<string | null>(null)
-  const [focusZone, setFocusZone] = useState<Zone | null>(null)
-  const [clockOffsetMin, setClockOffsetMinRaw] = useState(0)
+  const [inspectId, setInspectId] = useState<string | null>(initialUrl.inspect ?? null)
+  const [focusZone, setFocusZone] = useState<Zone | null>(initialUrl.zone ?? null)
+  const [clockOffsetMin, setClockOffsetMinRaw] = useState(
+    initialUrl.minute !== undefined && initialUrl.minute !== null
+      ? initialUrl.minute - DEMO_MINUTE_OF_DAY
+      : 0,
+  )
   const [outageOn, setOutageOnRaw] = useState(true)
   const [injected, setInjected] = useState<Observation[]>([])
-  const [ghostLayer, setGhostLayer] = useState(true)
+  const [ghostLayer, setGhostLayer] = useState(initialUrl.ghost ?? true)
   const [scrubbing, setScrubbing] = useState(false)
-  const [consequenceOverrides, setOverrides] = useState<Record<string, number>>({})
+  const [consequenceOverrides, setOverrides] = useState<Record<string, number>>(
+    initialPrefs.weights ?? {},
+  )
   const [playing, setPlaying] = useState(false)
   const [speedMin, setSpeedMin] = useState<number>(6)
   const [lastChange, setLastChange] = useState<string | null>(null)
-  const [theme, setTheme] = useState<Theme>('light')
+  const [theme, setTheme] = useState<Theme>(initialPrefs.theme ?? 'light')
   const [flips, setFlips] = useState<Flip[]>([])
   const scrubStart = useRef<number | null>(null)
 
@@ -151,6 +165,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
+
+  // View state belongs in the link; preferences belong to the person.
+  useEffect(() => {
+    writeUrl(
+      {
+        surface,
+        view: consoleView,
+        zone: focusZone,
+        minute: DEMO_MINUTE_OF_DAY + clockOffsetMin,
+        ghost: ghostLayer,
+        inspect: inspectId,
+      },
+      DEMO_MINUTE_OF_DAY,
+    )
+  }, [surface, consoleView, focusZone, clockOffsetMin, ghostLayer, inspectId])
+
+  useEffect(() => {
+    writePrefs({ theme, weights: consequenceOverrides })
+  }, [theme, consequenceOverrides])
 
   const now = DEMO_NOW + clockOffsetMin * MIN
   const outages = useMemo(
@@ -332,6 +365,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setOverrides((prev) => ({ ...prev, [routineId]: value }))
   }, [])
 
+  /** A link to exactly what is on screen, for pasting to somebody else. */
+  const shareLink = useCallback(() => window.location.href, [])
+
   const resetSim = useCallback(() => {
     actionLabel.current = 'Simulator reset'
     setInjected([])
@@ -384,6 +420,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     resetSim,
     theme,
     setTheme,
+    shareLink,
     lastChange,
     flips,
   }

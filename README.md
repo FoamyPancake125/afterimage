@@ -233,6 +233,20 @@ different typeface from the sentence describing it looks like two designs
 meeting rather than one. The mono survives in exactly one place, the MCP call
 on the Alexa+ surface, which genuinely is code.
 
+**Deep links and saved preferences.** View state lives in the address bar, so
+a link to the medicine cabinet at 9:08 on the morning it was missed can be sent
+to somebody:
+`#/console?view=plan&zone=medicine_cabinet&t=548`. Preferences that belong to a
+person rather than to a link, which is the theme and the care weightings, are
+kept in local storage instead, so a shared link never quietly restyles
+somebody's screen or overwrites their judgement about what matters.
+
+**Filter, sort and export.** Eleven routines is a list you can read; thirty
+devices and a month of history is not, and the controls that make that
+tractable have to exist before the data outgrows the screen. The day exports as
+JSON or CSV, because a finding that cannot leave the interface is a finding
+that stays trapped in a demo.
+
 **A rail, a top bar, and a keyboard path.** Primary navigation on the left
 because the four entries are device surfaces that sit side by side as views of
 one household; global state across the top; and everything reachable from

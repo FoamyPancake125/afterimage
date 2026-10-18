@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import {
   ZONE_NAME,
   clockLabel,
@@ -7,11 +7,14 @@ import {
   relativeLabel,
   routineBasis,
   startOfLocalDay,
+  reportHeadline,
   type Expectation,
+  type ExpectationStatus,
 } from '../../engine/index.ts'
 import { useStore } from '../../state/store.tsx'
 import { DayDial } from '../components/DayDial.tsx'
 import { FindingsTable } from '../components/FindingsTable.tsx'
+import { FindingsToolbar } from '../components/FindingsToolbar.tsx'
 import { FloorPlan } from '../components/FloorPlan.tsx'
 import { Transport } from '../components/Transport.tsx'
 import { Pill } from '../components/Primitives.tsx'
@@ -47,6 +50,9 @@ export function Console() {
     setInspectId,
   } = useStore()
 
+  const [query, setQuery] = useState('')
+  const [hidden, setHidden] = useState<Set<ExpectationStatus>>(new Set())
+
   const today = useMemo(() => {
     const dayStart = startOfLocalDay(world.now)
     return world.expectations
@@ -56,6 +62,27 @@ export function Console() {
 
   const routine = (id: string) => world.routines.find((r) => r.id === id)!
   const inFocus = (e: Expectation) => !focusZone || routine(e.routineId).zone === focusZone
+
+  const matchesQuery = (e: Expectation) => {
+    const q = query.trim().toLowerCase()
+    if (!q) return true
+    const r = routine(e.routineId)
+    return `${r.label} ${r.shortLabel} ${r.actor ?? ''} ${ZONE_NAME[r.zone]}`.toLowerCase().includes(q)
+  }
+  const visible = (e: Expectation) => inFocus(e) && matchesQuery(e) && !hidden.has(e.status)
+  const toggleStatus = (st: ExpectationStatus) =>
+    setHidden((prev) => {
+      const next = new Set(prev)
+      if (next.has(st)) next.delete(st)
+      else next.add(st)
+      return next
+    })
+
+  const counts = today.reduce(
+    (acc, e) => ({ ...acc, [e.status]: (acc[e.status] ?? 0) + 1 }),
+    {} as Record<ExpectationStatus, number>,
+  )
+  const outstanding = today.filter((e) => e.status !== 'satisfied' && e.status !== 'pending')
   const missing = today.filter((e) => e.status === 'missing')
   const uncertain = today.filter((e) => e.status === 'uncertain')
   const normal = today.filter((e) => e.status === 'satisfied' || e.status === 'pending')
@@ -86,26 +113,32 @@ export function Console() {
   return (
     <div className="console">
       <div className="console-main">
-        <header className="hero">
-          <span className="hero-kicker">{world.household.residentName}'s house · Tuesday</span>
-          <h1 className="hero-title">
-            {missing.length === 0 ? (
-              <>Today looks like every other day here.</>
-            ) : (
-              <>
-                {COUNT[missing.length] ?? String(missing.length)}{' '}
-                {missing.length === 1 ? 'thing that normally happens' : 'things that normally happen'}{' '}
-                <em>did not happen</em> today.
-              </>
-            )}
-          </h1>
+        <header className="pagehead">
+          <div>
+            <span className="pagehead-kicker">
+              {world.household.residentName}'s house ·{' '}
+              {new Date(world.now).toLocaleDateString([], {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </span>
+            <h1 className="pagehead-title">
+              {missing.length === 0 ? (
+                <>Today looks like every other day here.</>
+              ) : (
+                <>
+                  {COUNT[missing.length] ?? String(missing.length)}{' '}
+                  {missing.length === 1
+                    ? 'thing that normally happens'
+                    : 'things that normally happen'}{' '}
+                  <em>did not happen</em> today.
+                </>
+              )}
+            </h1>
+            <p className="pagehead-sub">{reportHeadline(world)}</p>
+          </div>
         </header>
-        <p className="hero-sub">
-          AFTERIMAGE learned {world.routines.length} routines from{' '}
-          {world.observations.length.toLocaleString()} Ring events over twenty-one days. Nobody
-          entered a schedule. Every verdict below is checkable, and the ones it cannot support, it
-          refuses to make.
-        </p>
 
         <div className="stage-grid">
           <div className="stage-view">
@@ -215,13 +248,24 @@ export function Console() {
           title="Findings"
           note="Ranked by consequence, not confidence. Click a row for the evidence, or sort by any column."
         >
+          <FindingsToolbar
+            world={world}
+            query={query}
+            setQuery={setQuery}
+            active={new Set(
+              (Object.keys(counts) as ExpectationStatus[]).filter((st) => !hidden.has(st)),
+            )}
+            toggleStatus={toggleStatus}
+            shown={outstanding.filter(visible).length}
+            total={outstanding.length}
+            counts={counts}
+          />
           <FindingsTable
             world={world}
-            rows={today
-              .filter((e) => e.status !== 'satisfied' && e.status !== 'pending')
-              .filter(inFocus)}
+            rows={outstanding.filter(visible)}
             selectedId={selectedId}
             onPick={toggle}
+            keyboard
           />
         </Section>
 
@@ -304,7 +348,7 @@ export function Console() {
         >
           <FindingsTable
             world={world}
-            rows={normal.filter(inFocus)}
+            rows={normal.filter(visible)}
             selectedId={selectedId}
             onPick={toggle}
           />

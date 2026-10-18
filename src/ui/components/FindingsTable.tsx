@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ZONE_NAME,
   clockLabel,
@@ -36,15 +36,20 @@ export function FindingsTable({
   selectedId,
   onPick,
   caption,
+  /** Roving focus with the arrow keys, the way a keyboard-first tool behaves. */
+  keyboard = false,
 }: {
   world: WorldState
   rows: Expectation[]
   selectedId?: string | null
   onPick: (e: Expectation) => void
   caption?: string
+  keyboard?: boolean
 }) {
   const [sort, setSort] = useState<SortKey>('rank')
   const [desc, setDesc] = useState(true)
+  const [cursor, setCursor] = useState(-1)
+  const bodyRef = useRef<HTMLTableSectionElement>(null)
 
   const routine = (id: string) => world.routines.find((r) => r.id === id)!
 
@@ -67,6 +72,36 @@ export function FindingsTable({
     })
     return copy
   }, [rows, sort, desc, world])
+
+  // Up and down move a cursor through the rows, enter opens the one under it.
+  // Bound on the table rather than globally so it cannot fight the palette or
+  // the Fire TV remote model.
+  useEffect(() => {
+    if (!keyboard) return
+    const el = bodyRef.current
+    if (!el) return
+    const onKey = (ev: KeyboardEvent) => {
+      if (ev.key === 'ArrowDown' || ev.key === 'j') {
+        ev.preventDefault()
+        setCursor((c) => Math.min(sorted.length - 1, c + 1))
+      } else if (ev.key === 'ArrowUp' || ev.key === 'k') {
+        ev.preventDefault()
+        setCursor((c) => Math.max(0, c - 1))
+      } else if ((ev.key === 'Enter' || ev.key === ' ') && cursor >= 0 && sorted[cursor]) {
+        ev.preventDefault()
+        onPick(sorted[cursor])
+      }
+    }
+    el.addEventListener('keydown', onKey)
+    return () => el.removeEventListener('keydown', onKey)
+  }, [keyboard, sorted, cursor, onPick])
+
+  useEffect(() => {
+    if (cursor < 0) return
+    const row = bodyRef.current?.children[cursor] as HTMLElement | undefined
+    row?.focus()
+    row?.scrollIntoView({ block: 'nearest' })
+  }, [cursor])
 
   const head = (key: SortKey, label: string, numeric = false) => (
     <th className={numeric ? 'dt-num' : undefined} aria-sort={sort === key ? (desc ? 'descending' : 'ascending') : 'none'}>
@@ -101,8 +136,8 @@ export function FindingsTable({
           {head('support', 'Support', true)}
         </tr>
       </thead>
-      <tbody>
-        {sorted.map((e) => {
+      <tbody ref={bodyRef}>
+        {sorted.map((e, i) => {
           const r = routine(e.routineId)
           const hit = world.observations.find((o) => o.id === e.satisfiedById)
           return (
@@ -110,6 +145,7 @@ export function FindingsTable({
               key={e.id}
               className={`dt-row dt-row--${e.status}${selectedId === e.id ? ' dt-row--on' : ''}`}
               onClick={() => onPick(e)}
+              onFocus={() => keyboard && setCursor(i)}
               tabIndex={0}
               onKeyDown={(ev) => {
                 if (ev.key === 'Enter' || ev.key === ' ') {
