@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Per-machine Claude Code state. launch.json is shared on purpose: it is how the
+# dev server is started for the Fire TV and browser previews.
+.claude/settings.local.json
