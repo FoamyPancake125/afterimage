@@ -11,7 +11,7 @@ import {
 } from '../../engine/index.ts'
 import { useStore } from '../../state/store.tsx'
 import { DayDial } from '../components/DayDial.tsx'
-import { FindingCard } from '../components/FindingCard.tsx'
+import { FindingsTable } from '../components/FindingsTable.tsx'
 import { FloorPlan } from '../components/FloorPlan.tsx'
 import { Transport } from '../components/Transport.tsx'
 import { Pill } from '../components/Primitives.tsx'
@@ -213,27 +213,16 @@ export function Console() {
 
         <Section
           title="Findings"
-          note="Ranked by consequence, not confidence. Click any card for the evidence."
+          note="Ranked by consequence, not confidence. Click a row for the evidence, or sort by any column."
         >
-          <div className="cards">
-            {today
+          <FindingsTable
+            world={world}
+            rows={today
               .filter((e) => e.status !== 'satisfied' && e.status !== 'pending')
-              .filter(inFocus)
-              .map((e) => (
-                <FindingCard
-                  key={e.id}
-                  world={world}
-                  expectation={e}
-                  routine={routine(e.routineId)}
-                  selected={selectedId === e.id}
-                  onToggle={() => toggle(e)}
-                />
-              ))}
-            {today.filter((e) => e.status !== 'satisfied' && e.status !== 'pending').filter(inFocus)
-              .length === 0 && (
-              <p className="empty">Nothing is outstanding in this part of the house.</p>
-            )}
-          </div>
+              .filter(inFocus)}
+            selectedId={selectedId}
+            onPick={toggle}
+          />
         </Section>
 
         {links.length > 0 && (
@@ -313,20 +302,14 @@ export function Console() {
           title="Normal today"
           note="Shown on purpose. A system that only ever reports problems gives you no way to calibrate it."
         >
-          <div className="cards">
-            {normal.filter(inFocus).map((e) => (
-              <FindingCard
-                key={e.id}
-                world={world}
-                expectation={e}
-                routine={routine(e.routineId)}
-                selected={selectedId === e.id}
-                onToggle={() => toggle(e)}
-              />
-            ))}
-          </div>
+          <FindingsTable
+            world={world}
+            rows={normal.filter(inFocus)}
+            selectedId={selectedId}
+            onPick={toggle}
+          />
         </Section>
-      </div>
+            </div>
 
       <aside className="console-side">
         <div className="panel" style={{ marginBottom: 16 }}>
@@ -421,7 +404,7 @@ export function Console() {
                 const d = world.household.devices.find((x) => x.id === o.deviceId)
                 return (
                   <p key={o.id} style={{ margin: '0 0 8px', fontSize: 12.5, color: 'var(--ink-2)' }}>
-                    <span className="mono" style={{ color: 'var(--unknown)' }}>
+                    <span className="num" style={{ color: 'var(--unknown)' }}>
                       {clockLabel(o.from)} to {clockLabel(o.to)}
                     </span>{' '}
                     {d?.name} {o.cause.replace('_', ' ')} · {relativeLabel(o.to, world.now)}

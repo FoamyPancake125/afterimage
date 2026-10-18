@@ -453,7 +453,7 @@ export function DayDial({
               {scrubbing ? 'scrubbing the day' : 'drag the hand'}
             </span>
             <span className="dial-hub-detail">
-              departure <b className="mono">{departure}</b> / 100
+              departure <b className="num">{departure}</b> / 100
             </span>
           </>
         )}

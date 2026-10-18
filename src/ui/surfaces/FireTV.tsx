@@ -108,7 +108,7 @@ export function FireTV() {
               </p>
             </div>
             <div className="tv-head-right">
-              <div className="mono" style={{ fontSize: '3.6cqh' }}>
+              <div className="num" style={{ fontSize: '3.6cqh' }}>
                 {clockLabel(world.now)}
               </div>
               <div style={{ fontSize: '1.8cqh', color: 'var(--ink-3)' }}>

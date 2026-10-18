@@ -221,6 +221,24 @@ for the only thing colour should carry here, which is whether something was
 observed, expected, or unknowable. Status is a word with a small mark beside
 it, not a coloured chip.
 
+**Tables, not cards.** Every finding carries the same six facts, and the only
+question a reader has is which to look at first, which is a comparison. In
+columns the scores can be read down the page instead of hunted for inside
+paragraphs, and sorting turns "what is worst" and "what happened first" into
+one click each.
+
+**Figures are set in the interface face with tabular numerals,** not in a mono
+one. Monospace in a product interface reads as code, and a severity score in a
+different typeface from the sentence describing it looks like two designs
+meeting rather than one. The mono survives in exactly one place, the MCP call
+on the Alexa+ surface, which genuinely is code.
+
+**A rail, a top bar, and a keyboard path.** Primary navigation on the left
+because the four entries are device surfaces that sit side by side as views of
+one household; global state across the top; and everything reachable from
+Cmd+K, which layers a fast path over the visible controls rather than
+replacing them. Spacing is a 4px grid throughout.
+
 The type is Libre Franklin, a Franklin Gothic and therefore the voice of
 broadsheet newspapers rather than of software, with Newsreader for the two
 headlines that carry the argument and DM Mono for every figure, so that columns

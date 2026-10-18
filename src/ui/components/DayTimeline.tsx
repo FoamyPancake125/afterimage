@@ -280,7 +280,7 @@ export function ClockReadout({ world }: { world: WorldState }) {
   const m = minuteOfDay(world.now)
   return (
     <span className="clock">
-      <b className="mono">{clockLabel(world.now)}</b>
+      <b className="num">{clockLabel(world.now)}</b>
       <span>
         {new Date(world.now).toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' })}
         {m > 1080 ? ' · evening' : m > 720 ? ' · afternoon' : ' · morning'}

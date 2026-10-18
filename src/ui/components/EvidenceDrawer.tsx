@@ -130,8 +130,8 @@ export function EvidenceDrawer() {
                       setHighlight({ observationIds: [o.id], expectationIds: [], noveltyIds: [] })
                     }
                   >
-                    <span className="mono">{dayLabel(o.ts, world.now)}</span>
-                    <span className="mono prior-time">{clockLabel(o.ts)}</span>
+                    <span className="num">{dayLabel(o.ts, world.now)}</span>
+                    <span className="num prior-time">{clockLabel(o.ts)}</span>
                   </button>
                 ))}
               </div>

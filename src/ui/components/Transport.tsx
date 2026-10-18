@@ -6,7 +6,7 @@ const JUMPS = [
   { label: '8:44a', m: 524 },
   { label: '3:36p', m: 936 },
   { label: '7:45p', m: DEMO_MINUTE_OF_DAY },
-  { label: '9:39p', m: 1179 },
+  { label: '9:39p', m: 1299 },
 ]
 
 /**
