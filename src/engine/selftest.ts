@@ -5,7 +5,7 @@
  * demo is lying and the assertions below should fail loudly.
  */
 import { buildWorld, INJECTABLE, buildHistory, buildOutages, HOUSEHOLD } from './index.ts'
-import { DAY, DEMO_NOW, minuteLabel, MIN, routineHistory, startOfLocalDay } from './index.ts'
+import { DAY, DEMO_NOW, escalations, minuteLabel, MIN, recentDays, routineHistory, startOfLocalDay } from './index.ts'
 
 let failures = 0
 function check(name: string, ok: boolean, detail = '') {
@@ -248,6 +248,69 @@ console.log('\nSimulator controls')
     'restoring coverage turns “cannot tell” into a real absence',
     a?.status === 'uncertain' && b?.status === 'missing',
     `${a?.status} to ${b?.status}`,
+  )
+}
+
+// Escalation is the half of the product that decides whose evening gets
+// interrupted, so the thresholds and the suppression are held to the claim.
+console.log('\nEscalation')
+{
+  const notes = escalations(w)
+  for (const n of notes.slice(0, 6)) {
+    console.log(`  ${n.contact.name.padEnd(8)} sev ${String(n.severity).padStart(3)}  ${n.sent ? 'sent' : 'queued'}`)
+  }
+
+  check('the day produces notifications at all', notes.length > 0)
+  check(
+    'nobody is told about a finding below their threshold',
+    notes.every((n) => n.severity >= n.contact.notifyAt),
+  )
+  check(
+    'the mail delivery never reaches anyone',
+    !notes.some((n) => {
+      const e = w.expectations.find((x) => x.id === n.expectationId)
+      return w.routines.find((r) => r.id === e?.routineId)?.signature.startsWith('package')
+    }),
+  )
+  check(
+    'the resident is asked before the neighbour',
+    (() => {
+      const first = notes.find((n) => n.contact.name === 'Eleanor')
+      const last = notes.find((n) => n.contact.name === 'Ruth')
+      return !first || !last || first.at < last.at
+    })(),
+  )
+
+  const top = w.expectations
+    .filter((e) => e.dayStart === new Date(2026, 9, 20).getTime() && e.status === 'missing')
+    .sort((a, b) => b.severity - a.severity)[0]
+  const suppressed = escalations(w, [
+    { expectationId: top.id, reason: 'I was with her, it is fine', at: 0 },
+  ])
+  check(
+    'an acknowledged finding stops escalating',
+    suppressed.filter((n) => n.expectationId === top.id).every((n) => n.suppressed && !n.sent),
+  )
+  check(
+    'acknowledging one finding does not suppress the others',
+    suppressed.some((n) => n.expectationId !== top.id && !n.suppressed),
+  )
+  check('every notification carries the words that would be said', notes.every((n) => n.message.length > 40))
+}
+
+console.log('\nWeek of context')
+{
+  const days = recentDays(w, 7)
+  check('a week of days is available behind today', days.length >= 6, `${days.length} days`)
+  check(
+    'days are ordered oldest first and end on today',
+    days.every((d, i) => i === 0 || d.dayStart > days[i - 1].dayStart) &&
+      days[days.length - 1].dayStart === new Date(2026, 9, 20).getTime(),
+  )
+  check(
+    'today is the worst day of the week',
+    days[days.length - 1].departure === Math.max(...days.map((d) => d.departure)),
+    days.map((d) => d.departure).join(', '),
   )
 }
 

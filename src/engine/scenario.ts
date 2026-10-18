@@ -186,10 +186,42 @@ export const HOUSEHOLD: Household = {
   residentName: 'Eleanor',
   residentAge: 78,
   timezoneLabel: 'Household local time',
+  /*
+   * Ordered by how much it costs to interrupt them. Eleanor is asked first
+   * because she can settle most of these in one sentence and it is her house.
+   * Ruth is last because knocking on a neighbour's door at nine in the evening
+   * is a real imposition, and a system that does it for a missed parcel will
+   * not be running by the end of the month.
+   */
   circle: [
-    { name: 'Dana', relation: 'Daughter, 40 min away', channel: 'Alexa+ and phone' },
-    { name: 'Marcus', relation: 'Weekday caregiver', channel: 'Care agency app' },
-    { name: 'Ruth', relation: 'Neighbour, two doors down', channel: 'Phone only' },
+    {
+      name: 'Eleanor',
+      relation: 'Asked on her own Echo first',
+      channel: 'Alexa+ announcement',
+      notifyAt: 55,
+      escalateAfterMin: 45,
+    },
+    {
+      name: 'Dana',
+      relation: 'Daughter, 40 min away',
+      channel: 'Alexa+ and phone',
+      notifyAt: 70,
+      escalateAfterMin: 60,
+    },
+    {
+      name: 'Marcus',
+      relation: 'Weekday caregiver',
+      channel: 'Care agency app',
+      notifyAt: 80,
+      escalateAfterMin: 90,
+    },
+    {
+      name: 'Ruth',
+      relation: 'Neighbour, two doors down',
+      channel: 'Phone only',
+      notifyAt: 92,
+      escalateAfterMin: 0,
+    },
   ],
   devices: DEVICES,
   careProfile: CARE_PROFILE,

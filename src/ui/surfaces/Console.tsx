@@ -15,6 +15,8 @@ import { useStore } from '../../state/store.tsx'
 import { DayDial } from '../components/DayDial.tsx'
 import { FindingsTable } from '../components/FindingsTable.tsx'
 import { FindingsToolbar } from '../components/FindingsToolbar.tsx'
+import { Escalation } from '../components/Escalation.tsx'
+import { WeekStrip } from '../components/WeekStrip.tsx'
 import { FloorPlan } from '../components/FloorPlan.tsx'
 import { Transport } from '../components/Transport.tsx'
 import { Pill } from '../components/Primitives.tsx'
@@ -48,6 +50,8 @@ export function Console() {
     focusZone,
     setFocusZone,
     setInspectId,
+    ackedIds,
+    notifications,
   } = useStore()
 
   const [query, setQuery] = useState('')
@@ -83,7 +87,7 @@ export function Console() {
     {} as Record<ExpectationStatus, number>,
   )
   const outstanding = today.filter((e) => e.status !== 'satisfied' && e.status !== 'pending')
-  const missing = today.filter((e) => e.status === 'missing')
+  const missing = today.filter((e) => e.status === 'missing' && !ackedIds.has(e.id))
   const uncertain = today.filter((e) => e.status === 'uncertain')
   const normal = today.filter((e) => e.status === 'satisfied' || e.status === 'pending')
   const departure = dayDeparture(world)
@@ -190,6 +194,14 @@ export function Console() {
               />
             </div>
 
+            <div>
+              <div className="panel-head">
+                <span className="panel-title">The week behind today</span>
+                <span className="panel-note">departure per day</span>
+              </div>
+              <WeekStrip world={world} />
+            </div>
+
             <div className="switch-row">
               <button
                 className="switch"
@@ -267,6 +279,13 @@ export function Console() {
             onPick={toggle}
             keyboard
           />
+        </Section>
+
+        <Section
+          title="Who gets told"
+          note={`${notifications.filter((n) => !n.suppressed).length} notifications from today's findings`}
+        >
+          <Escalation world={world} />
         </Section>
 
         {links.length > 0 && (

@@ -65,6 +65,8 @@ const PREFS_KEY = 'afterimage.prefs.v1'
 export interface Prefs {
   theme: Theme
   weights: Record<string, number>
+  /** Findings somebody has explained. Kept so an answer survives a reload. */
+  acks: { expectationId: string; reason: string; at: number }[]
 }
 
 export function readPrefs(): Partial<Prefs> {
@@ -75,6 +77,7 @@ export function readPrefs(): Partial<Prefs> {
     return {
       theme: parsed.theme === 'dark' || parsed.theme === 'light' ? parsed.theme : undefined,
       weights: typeof parsed.weights === 'object' && parsed.weights ? parsed.weights : undefined,
+      acks: Array.isArray(parsed.acks) ? parsed.acks : undefined,
     }
   } catch {
     // A corrupt or unavailable store is not a reason to fail to start.

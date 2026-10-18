@@ -215,15 +215,37 @@ export interface CareProfileEntry {
   shortLabel?: string
 }
 
+export interface Contact {
+  name: string
+  relation: string
+  channel: string
+  /**
+   * Severity at or above which this person is told. A threshold rather than a
+   * subscription, because the useful question is never "who wants alerts" but
+   * "how bad does it have to be before this person's evening is interrupted".
+   */
+  notifyAt: number
+  /** Minutes to wait for an acknowledgement before escalating past them. */
+  escalateAfterMin: number
+}
+
 export interface Household {
   id: string
   residentName: string
   residentAge: number
-  /** Who gets told, in order. */
-  circle: { name: string; relation: string; channel: string }[]
+  /** Who gets told, in escalation order. */
+  circle: Contact[]
   timezoneLabel: string
   devices: Device[]
   careProfile: CareProfileEntry[]
+}
+
+/** A finding somebody has explained, so it stops being asked about. */
+export interface Acknowledgement {
+  expectationId: string
+  /** One of the reasons the household can give, or free text. */
+  reason: string
+  at: number
 }
 
 /** Everything the engine knows, recomputed from observations on every change. */

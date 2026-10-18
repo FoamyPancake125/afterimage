@@ -1,5 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
+  ACK_REASONS,
   EPISTEMIC_NAME,
   ZONE_NAME,
   clockLabel,
@@ -22,7 +23,8 @@ import { Metric, Pill, epistemicTone, severityColor, statusTone, statusWord } fr
  * only then what it might be connected to.
  */
 export function EvidenceDrawer() {
-  const { world, inspectId, setInspectId, setHighlight } = useStore()
+  const { world, inspectId, setInspectId, setHighlight, acks, acknowledge, unacknowledge } = useStore()
+  const [picking, setPicking] = useState(false)
   const e = world.expectations.find((x) => x.id === inspectId)
   const r = world.routines.find((x) => x.id === e?.routineId)
 
@@ -37,6 +39,7 @@ export function EvidenceDrawer() {
 
   if (!e || !r) return null
 
+  const ack = acks.find((a) => a.expectationId === e.id)
   const links = world.correlations.filter((c) => c.expectationIds.includes(e.id))
   const satisfier = world.observations.find((o) => o.id === e.satisfiedById)
   const priors = (e.evidence.flatMap((x) => x.observationIds ?? []) ?? [])
@@ -54,6 +57,7 @@ export function EvidenceDrawer() {
             <Pill tone={statusTone(e.status)}>{statusWord(e.status)}</Pill>
             <Pill tone={epistemicTone(e.epistemic)}>{EPISTEMIC_NAME[e.epistemic]}</Pill>
             {e.streak > 0 && <Pill tone="quiet">{e.streak}-day run</Pill>}
+            {ack && <Pill tone="ok">Acknowledged</Pill>}
           </div>
           <button className="drawer-close" onClick={() => setInspectId(null)} aria-label="Close">
             <svg width="13" height="13" viewBox="0 0 13 13" stroke="currentColor" strokeWidth="1.4" aria-hidden>
@@ -150,6 +154,50 @@ export function EvidenceDrawer() {
                   <p className="link-basis">{c.basis}</p>
                 </div>
               ))}
+            </Block>
+          )}
+
+          {(e.status === 'missing' || e.status === 'uncertain') && (
+            <Block title="Do you already know why?">
+              {ack ? (
+                <div className="ack ack--on">
+                  <p className="drawer-text">
+                    Explained: <b>{ack.reason}</b>. Nobody else will be told about this, and it is
+                    greyed out in the list.
+                  </p>
+                  <button className="chip" onClick={() => unacknowledge(e.id)}>
+                    Undo
+                  </button>
+                </div>
+              ) : picking ? (
+                <div className="ack-reasons">
+                  {ACK_REASONS.map((reason) => (
+                    <button
+                      key={reason}
+                      className="ack-reason"
+                      onClick={() => {
+                        acknowledge(e.id, reason)
+                        setPicking(false)
+                      }}
+                    >
+                      {reason}
+                    </button>
+                  ))}
+                  <button className="chip" onClick={() => setPicking(false)}>
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <p className="drawer-text">
+                    The most common cause of an absence is a perfectly good reason the house could
+                    not see. Say so and this stops escalating immediately.
+                  </p>
+                  <button className="btn" style={{ marginTop: 'var(--s3)' }} onClick={() => setPicking(true)}>
+                    I know why this happened
+                  </button>
+                </>
+              )}
             </Block>
           )}
 

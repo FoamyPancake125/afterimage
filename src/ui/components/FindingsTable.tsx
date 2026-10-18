@@ -6,6 +6,7 @@ import {
   type Expectation,
   type WorldState,
 } from '../../engine/index.ts'
+import { useStore } from '../../state/store.tsx'
 import { Pill, severityColor, statusTone, statusWord } from './Primitives.tsx'
 
 type SortKey = 'rank' | 'time' | 'severity' | 'confidence' | 'support'
@@ -48,6 +49,7 @@ export function FindingsTable({
 }) {
   const [sort, setSort] = useState<SortKey>('rank')
   const [desc, setDesc] = useState(true)
+  const { ackedIds } = useStore()
   const [cursor, setCursor] = useState(-1)
   const bodyRef = useRef<HTMLTableSectionElement>(null)
 
@@ -143,7 +145,9 @@ export function FindingsTable({
           return (
             <tr
               key={e.id}
-              className={`dt-row dt-row--${e.status}${selectedId === e.id ? ' dt-row--on' : ''}`}
+              className={`dt-row dt-row--${e.status}${selectedId === e.id ? ' dt-row--on' : ''}${
+                ackedIds.has(e.id) ? ' dt-row--acked' : ''
+              }`}
               onClick={() => onPick(e)}
               onFocus={() => keyboard && setCursor(i)}
               tabIndex={0}
@@ -155,7 +159,9 @@ export function FindingsTable({
               }}
             >
               <td>
-                <Pill tone={statusTone(e.status)}>{statusWord(e.status)}</Pill>
+                <Pill tone={ackedIds.has(e.id) ? 'quiet' : statusTone(e.status)}>
+                  {ackedIds.has(e.id) ? 'Explained' : statusWord(e.status)}
+                </Pill>
               </td>
               <td>
                 <span className="dt-title">{r.label}</span>

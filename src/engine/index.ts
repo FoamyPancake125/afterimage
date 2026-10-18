@@ -14,6 +14,8 @@ export { findNovelties } from './novelty.ts'
 export { correlate } from './correlate.ts'
 export { ask, SUGGESTED_QUESTIONS } from './reason.ts'
 export { buildDayReport, buildFindingsCsv, reportFilename, reportHeadline } from './report.ts'
+export { escalations, describeEscalation, ACK_REASONS } from './escalate.ts'
+export type { Notification } from './escalate.ts'
 export type { Answer, AnswerCard, Intent } from './reason.ts'
 export {
   DEMO_NOW,
@@ -79,7 +81,7 @@ export function buildWorld(input: WorldInput = {}): WorldState {
     outages,
     household.devices,
     now,
-    { days: 3 },
+    { days: 8 },
   )
 
   const satisfiedIds = new Set(
@@ -110,6 +112,36 @@ export function routineOf(w: WorldState, routineId: string) {
 
 export function observationOf(w: WorldState, id: string | undefined) {
   return id ? w.observations.find((o) => o.id === id) : undefined
+}
+
+/**
+ * A day's departure from normal, for any of the recent days the evaluator
+ * covers. Today also folds in unexplained events; earlier days are scored on
+ * their expectations alone, because novelty is only computed for today.
+ */
+export function departureFor(w: WorldState, dayStart: number): number {
+  const day = w.expectations.filter((e) => e.dayStart === dayStart)
+  if (!day.length) return 0
+  return Math.round(Math.min(100, Math.max(0, ...day.map((e) => e.severity))))
+}
+
+/** The last `days` days, oldest first, for the context strip. */
+export function recentDays(w: WorldState, days = 7) {
+  const today = new Date(w.now)
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()
+  const out: { dayStart: number; departure: number; missing: number; uncertain: number }[] = []
+  for (let i = days - 1; i >= 0; i--) {
+    const dayStart = todayStart - i * 86_400_000
+    const day = w.expectations.filter((e) => e.dayStart === dayStart)
+    if (!day.length) continue
+    out.push({
+      dayStart,
+      departure: departureFor(w, dayStart),
+      missing: day.filter((e) => e.status === 'missing').length,
+      uncertain: day.filter((e) => e.status === 'uncertain').length,
+    })
+  }
+  return out
 }
 
 /** 0..100. How much of today departs from the household's own normal. */

@@ -14,12 +14,15 @@ import {
   INJECTABLE,
   MIN,
   clockLabel,
+  escalations,
   learnRoutines,
   startOfLocalDay,
   buildHistory,
   buildOutages,
   buildWorld,
+  type Acknowledgement,
   type ExpectationStatus,
+  type Notification,
   type Observation,
   type InjectableEvent,
   type WorldState,
@@ -113,6 +116,13 @@ interface Store {
   setTheme: (t: Theme) => void
   shareLink: () => string
 
+  /** Findings somebody has explained, and the escalations they suppress. */
+  acks: Acknowledgement[]
+  ackedIds: Set<string>
+  acknowledge: (expectationId: string, reason: string) => void
+  unacknowledge: (expectationId: string) => void
+  notifications: Notification[]
+
   /** Short description of what the last action changed. */
   lastChange: string | null
   /** Recent verdict changes, newest first, for the live feed. */
@@ -156,6 +166,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [speedMin, setSpeedMin] = useState<number>(6)
   const [lastChange, setLastChange] = useState<string | null>(null)
   const [theme, setTheme] = useState<Theme>(initialPrefs.theme ?? 'light')
+  const [acks, setAcks] = useState<Acknowledgement[]>(initialPrefs.acks ?? [])
   const [flips, setFlips] = useState<Flip[]>([])
   const scrubStart = useRef<number | null>(null)
 
@@ -182,8 +193,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [surface, consoleView, focusZone, clockOffsetMin, ghostLayer, inspectId])
 
   useEffect(() => {
-    writePrefs({ theme, weights: consequenceOverrides })
-  }, [theme, consequenceOverrides])
+    writePrefs({ theme, weights: consequenceOverrides, acks })
+  }, [theme, consequenceOverrides, acks])
 
   const now = DEMO_NOW + clockOffsetMin * MIN
   const outages = useMemo(
@@ -365,6 +376,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setOverrides((prev) => ({ ...prev, [routineId]: value }))
   }, [])
 
+  const ackedIds = useMemo(() => new Set(acks.map((a) => a.expectationId)), [acks])
+  const notifications = useMemo(() => escalations(world, acks), [world, acks])
+
+  const acknowledge = useCallback((expectationId: string, reason: string) => {
+    actionLabel.current = 'Acknowledged'
+    setAcks((prev) => [
+      ...prev.filter((a) => a.expectationId !== expectationId),
+      { expectationId, reason, at: Date.now() },
+    ])
+  }, [])
+
+  const unacknowledge = useCallback((expectationId: string) => {
+    actionLabel.current = 'Acknowledgement removed'
+    setAcks((prev) => prev.filter((a) => a.expectationId !== expectationId))
+  }, [])
+
   /** A link to exactly what is on screen, for pasting to somebody else. */
   const shareLink = useCallback(() => window.location.href, [])
 
@@ -381,6 +408,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setInspectId(null)
     setFocusZone(null)
     setOverrides({})
+    setAcks([])
     setGhostLayer(true)
   }, [])
 
@@ -421,6 +449,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     theme,
     setTheme,
     shareLink,
+    acks,
+    ackedIds,
+    acknowledge,
+    unacknowledge,
+    notifications,
     lastChange,
     flips,
   }

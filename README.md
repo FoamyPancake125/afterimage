@@ -149,9 +149,9 @@ Verify the engine's claims:
 npm run engine:test
 ```
 
-37 assertions covering the learner's negative controls, every verdict in the demo day, the
-causal-coupling test, the coverage logic, off-schedule handling, and the promise printed on
-every simulator button.
+47 assertions covering the learner's negative controls, every verdict in the demo day, the
+causal-coupling test, the coverage logic, off-schedule handling, the escalation
+thresholds and their suppression, and the promise printed on every simulator button.
 
 That off-schedule group is there because the history strip caught a real bug: the window is two
 standard deviations wide, so about five percent of perfectly normal occurrences fall outside it,
@@ -196,6 +196,35 @@ Honest list, since the demo is reproducible and reviewers will look:
 - The Alexa+ integration takes the simulated-experience path. `reason.ts` already returns the
   structured results an MCP server would serve; what is missing is the HTTP transport.
 - Fire TV is verified in a browser at TV dimensions, not yet on-device.
+
+---
+
+## What it does about what it finds
+
+Detecting an absence is half a product. The half that decides who is told, how
+quickly, and how bad it has to be before a neighbour is knocked up at nine in
+the evening is the half that determines whether the thing is still installed a
+month later. So the loop is closed rather than left at the alert:
+
+**Thresholds, shown as numbers next to names.** Eleanor is asked on her own
+Echo at severity 55, because she can settle most of these in one sentence and
+it is her house. Dana at 70. The care agency at 80. Ruth, the neighbour, at 92,
+which today's worst finding does not reach, so she is not called. "Ruth is told
+at 92" is a sentence somebody can disagree with; "smart notifications" is not.
+
+**Escalation, not broadcast.** Each contact waits out the previous one's window,
+so the household is escalated through rather than all woken at once. Every
+queued notification shows the exact words that would be said.
+
+**Acknowledgement.** The most common cause of an absence is a perfectly good
+reason the house could not see. Say "I was with her, it is fine" and that
+finding stops escalating immediately, greys out in the table, and drops out of
+the headline count. In the demo, acknowledging the morning dose takes the day
+from six pending notifications to three.
+
+**A week behind today.** One bad day means little alone. The strip shows the
+six days before it so a family can see whether this is the first time or the
+fourth, rather than being told a trend.
 
 ---
 
