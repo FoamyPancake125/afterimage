@@ -14,7 +14,7 @@ import { DayDial } from '../components/DayDial.tsx'
 import { FindingCard } from '../components/FindingCard.tsx'
 import { FloorPlan } from '../components/FloorPlan.tsx'
 import { Transport } from '../components/Transport.tsx'
-import { Pill, SupportRing } from '../components/Primitives.tsx'
+import { Pill } from '../components/Primitives.tsx'
 
 const ORDER: Record<Expectation['status'], number> = {
   missing: 0,
@@ -396,10 +396,6 @@ export function Console() {
                     aria-label={`How much ${r.shortLabel} matters`}
                   />
                 </span>
-                <SupportRing
-                  value={r.support}
-                  tone={r.consequence > 0.7 ? 'critical' : r.consequence > 0.45 ? 'expected' : 'observed'}
-                />
               </div>
             ))}
             <p className="link-basis" style={{ marginTop: 12 }}>

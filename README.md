@@ -221,8 +221,10 @@ for the only thing colour should carry here, which is whether something was
 observed, expected, or unknowable. Status is a word with a small mark beside
 it, not a coloured chip.
 
-The type is IBM Plex Sans with IBM Plex Mono for every figure, and Source Serif
-4 for the two headlines that carry the argument.
+The type is Libre Franklin, a Franklin Gothic and therefore the voice of
+broadsheet newspapers rather than of software, with Newsreader for the two
+headlines that carry the argument and IBM Plex Mono for every figure, so that
+columns of numbers line up and can be compared down the page.
 
 ---
 
