@@ -174,3 +174,13 @@ Honest list, since the demo is reproducible and reviewers will look:
 - The Alexa+ integration takes the simulated-experience path. `reason.ts` already returns the
   structured results an MCP server would serve; what is missing is the HTTP transport.
 - Fire TV is verified in a browser at TV dimensions, not yet on-device.
+
+---
+
+## License
+
+MIT. See [LICENSE](LICENSE).
+
+This repository is public and carries an open-source license, which is the
+route the hackathon rules allow in place of a private repository shared with
+named reviewers.
