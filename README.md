@@ -110,9 +110,20 @@ On 15 of 15 days where both applied, it followed within 22 min of it, varying by
 
 ### Things worth trying
 
-- **Drag the hand around the dial.** The whole inference re-runs at that moment. At 9:00 AM
-  the dose is an open window and nothing is wrong. At 10:30 PM the deadbolt becomes the fifth
-  absence. You cannot fake this with a recording.
+- **Press play, or hit space.** The hand sweeps the dial and the inference re-runs at every
+  minute of the day. Expectations sit harmlessly open all morning and then turn into absences
+  the moment their windows close, and each change is announced as it happens. This is the one
+  thing a recorded demo cannot fake, and it is the clearest thing to put in a video.
+- **Drag the hand around the dial.** Same mechanism, under manual control. At 9:00 AM the dose
+  is an open window and nothing is wrong. At 10:30 PM the deadbolt becomes the fifth absence.
+- **Switch the stage from When to Where.** The dial answers when; the floor plan answers where,
+  which is the question a family member actually asks first. Rooms with an unmet expectation are
+  drawn in the same dashed outline the rest of the product uses for absence, and hatching marks
+  a room nothing could see. Click a room to narrow every panel on the page to it.
+- **Click any finding.** The evidence drawer opens with twenty-one days of that routine drawn as
+  twenty-one marks, each offset by how early or late it ran. "It has happened on 21 of 21 days"
+  is a sentence you have to trust; a row of marks ending in one hollow one is the same claim,
+  checkable at a glance.
 - **Press `G`.** Hides the afterimages, leaving only what Ring recorded, which is everything
   any other system in this category can show you. That gap is the product.
 - **On the Ring surface, press "Remove the 3:12 PM charging window."** The afternoon walk turns from
@@ -138,8 +149,14 @@ Verify the engine's claims:
 npm run engine:test
 ```
 
-34 assertions covering the learner's negative controls, every verdict in the demo day, the
-causal-coupling test, the coverage logic, and the promise printed on every simulator button.
+37 assertions covering the learner's negative controls, every verdict in the demo day, the
+causal-coupling test, the coverage logic, off-schedule handling, and the promise printed on
+every simulator button.
+
+That off-schedule group is there because the history strip caught a real bug: the window is two
+standard deviations wide, so about five percent of perfectly normal occurrences fall outside it,
+and an event eleven minutes early was being reported as "did not happen". An absence detector
+that cries wolf at ordinary drift is worse than no absence detector, so the case is now a test.
 
 ---
 
@@ -156,7 +173,12 @@ src/engine/          No React, no DOM. Runs under plain Node.
   reason.ts          Q&A over the world state; backs Alexa+ and the MCP tools
   selftest.ts        The claims above, as assertions
 src/ui/surfaces/     Console · FireTV · AlexaPlus · RingSim
-src/ui/components/   DayDial (the signature visual), DayTimeline, FindingCard
+src/ui/components/   DayDial       the signature visual, draggable and playable
+                     FloorPlan     the same day, answered spatially
+                     EvidenceDrawer the full argument behind one verdict
+                     HistoryStrip  21 days of a routine as 21 marks
+                     Transport     play, pause, speed, jump
+                     FlipFeed      verdict changes, announced as they happen
 ```
 
 The engine is deliberately free of UI imports. It is the piece that would ship as an MCP

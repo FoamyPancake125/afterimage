@@ -21,8 +21,17 @@ import {
 
 /** Grace added past the learned window before anything is called missing. */
 const GRACE_MIN = 10
-/** How far past the window a late arrival still counts as late rather than missing. */
-const LATE_HORIZON_FACTOR = 3
+/**
+ * How far outside the window an occurrence still counts as off schedule rather
+ * than missing, as a multiple of the learned tolerance.
+ *
+ * This applies on both sides. An event eleven minutes early is drift, not an
+ * absence, and reporting it as "did not happen" would be exactly the kind of
+ * false alarm that gets a system like this switched off. The window is two
+ * standard deviations wide, so by construction about five percent of perfectly
+ * normal occurrences fall outside it.
+ */
+const OFF_SCHEDULE_FACTOR = 3
 
 export interface EvaluateOptions {
   /** Days back to evaluate, including today. */
@@ -83,7 +92,8 @@ export function evaluateExpectations(
       const windowStart = expectedAt - r.toleranceMin * MIN
       const windowEnd = expectedAt + r.toleranceMin * MIN
       const missingAfter = windowEnd + GRACE_MIN * MIN
-      const lateHorizon = windowEnd + LATE_HORIZON_FACTOR * r.toleranceMin * MIN
+      const lateHorizon = windowEnd + OFF_SCHEDULE_FACTOR * r.toleranceMin * MIN
+      const earlyHorizon = windowStart - OFF_SCHEDULE_FACTOR * r.toleranceMin * MIN
 
       const exact = bySignature.get(r.signature) ?? []
       const loose = (byKindZone.get(`${r.kind}|${r.zone}`) ?? []).filter(
@@ -92,7 +102,11 @@ export function evaluateExpectations(
       const candidates = exact.length ? exact : loose
 
       const inWindow = candidates.find((o) => o.ts >= windowStart && o.ts <= windowEnd)
-      const lateHit = candidates.find((o) => o.ts > windowEnd && o.ts <= lateHorizon)
+      const offHit = candidates.find(
+        (o) =>
+          (o.ts > windowEnd && o.ts <= lateHorizon) ||
+          (o.ts < windowStart && o.ts >= earlyHorizon && o.ts >= dayStart),
+      )
 
       const coverage = coverageFor(r, devices, outages, windowStart, missingAfter)
       const streak = streakFor(r, bySignature, byKindZone, dayStart, devices, outages)
@@ -111,17 +125,17 @@ export function evaluateExpectations(
           text: `Recorded at ${clockLabel(inWindow.ts)}, inside the expected window.`,
           observationIds: [inWindow.id],
         })
-      } else if (lateHit) {
+      } else if (offHit) {
         status = 'late'
-        satisfiedById = lateHit.id
-        latenessMin = Math.round((lateHit.ts - expectedAt) / MIN)
+        satisfiedById = offHit.id
+        latenessMin = Math.round((offHit.ts - expectedAt) / MIN)
         evidence.push({
           type: 'window',
           epistemic: 'observed',
-          text: `Recorded at ${clockLabel(lateHit.ts)}, ${latenessMin} minutes later than the learned time of ${minuteLabel(
-            r.expectedMinute,
-          )}.`,
-          observationIds: [lateHit.id],
+          text: `Recorded at ${clockLabel(offHit.ts)}, ${Math.abs(latenessMin)} minutes ${
+            latenessMin >= 0 ? 'later' : 'earlier'
+          } than the learned time of ${minuteLabel(r.expectedMinute)}. It happened, just off schedule.`,
+          observationIds: [offHit.id],
         })
       } else if (now < missingAfter) {
         status = 'pending'
@@ -336,7 +350,9 @@ export function expectationHeadline(e: Expectation, r: Routine, now: number): st
     case 'missing':
       return `${r.label}: did not happen ${when.toLowerCase()}`
     case 'late':
-      return `${r.label}: ${e.latenessMin} min late`
+      return `${r.label}: ${Math.abs(e.latenessMin ?? 0)} min ${
+        (e.latenessMin ?? 0) >= 0 ? 'late' : 'early'
+      }`
     case 'uncertain':
       return `${r.label}: no coverage, cannot tell`
     case 'pending':
@@ -344,4 +360,26 @@ export function expectationHeadline(e: Expectation, r: Routine, now: number): st
     default:
       return `${r.label}: on time`
   }
+}
+
+/**
+ * How one routine has fared across recent days.
+ *
+ * The single most convincing thing about an absence is the row of days it
+ * breaks. Rather than describe that in a sentence, this returns the per-day
+ * verdicts so a caller can draw them, and it does so by running the same
+ * evaluator the live verdict comes from. There is deliberately no second,
+ * looser history calculation that could disagree with the finding above it.
+ */
+export function routineHistory(
+  routine: Routine,
+  observations: Observation[],
+  outages: Outage[],
+  devices: Device[],
+  now: number,
+  days = 21,
+): Expectation[] {
+  return evaluateExpectations([routine], observations, outages, devices, now, { days }).sort(
+    (a, b) => a.dayStart - b.dayStart,
+  )
 }

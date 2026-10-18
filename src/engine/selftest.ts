@@ -5,7 +5,7 @@
  * demo is lying and the assertions below should fail loudly.
  */
 import { buildWorld, INJECTABLE, buildHistory, buildOutages, HOUSEHOLD } from './index.ts'
-import { DEMO_NOW, minuteLabel, MIN, startOfLocalDay } from './index.ts'
+import { DAY, DEMO_NOW, minuteLabel, MIN, routineHistory, startOfLocalDay } from './index.ts'
 
 let failures = 0
 function check(name: string, ok: boolean, detail = '') {
@@ -139,6 +139,39 @@ check('every finding carries at least two pieces of evidence',
 // Every control in the Ring simulator claims a specific consequence on its
 // face. These assertions hold the UI to that claim, so a demo button can never
 // quietly become a button that does nothing.
+// An occurrence that happened, just outside the learned window, must never be
+// reported as an absence. The window is two standard deviations wide, so a
+// normal five percent of real occurrences fall outside it, and calling those
+// "did not happen" is the single fastest way to make the product untrustworthy.
+console.log('\nOff-schedule handling')
+{
+  const dose = w.routines.find((r) => r.signature.startsWith('cabinet_open'))!
+  const hist = routineHistory(dose, w.observations, w.outages, w.household.devices, w.now, 21)
+  const todayStart = new Date(2026, 9, 20).getTime()
+  const wronglyMissing = hist.filter(
+    (e) =>
+      e.dayStart !== todayStart &&
+      e.status === 'missing' &&
+      w.observations.some(
+        (o) => o.kind === 'cabinet_open' && o.ts >= e.dayStart && o.ts < e.dayStart + DAY,
+      ),
+  )
+  check(
+    'a day when the dose was taken is never reported as missing',
+    wronglyMissing.length === 0,
+    `${wronglyMissing.length} day(s) marked missing despite a recorded dose`,
+  )
+  check(
+    'only today is missing across the dose history',
+    hist.filter((e) => e.status === 'missing').length === 1,
+    `${hist.filter((e) => e.status === 'missing').length} missing days`,
+  )
+  check(
+    'an early occurrence is reported as off schedule with a negative offset',
+    hist.filter((e) => e.status === 'late').every((e) => e.latenessMin !== undefined),
+  )
+}
+
 console.log('\nSimulator controls')
 {
   const base = buildHistory(DEMO_NOW)

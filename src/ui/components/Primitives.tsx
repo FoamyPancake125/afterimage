@@ -25,7 +25,7 @@ export function statusTone(status: Expectation['status']): Tone {
 export function statusWord(status: Expectation['status']): string {
   return {
     missing: 'Did not happen',
-    late: 'Late',
+    late: 'Off schedule',
     satisfied: 'On time',
     pending: 'Still open',
     uncertain: 'Cannot tell',

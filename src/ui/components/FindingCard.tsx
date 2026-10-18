@@ -2,31 +2,16 @@ import {
   EPISTEMIC_NAME,
   clockLabel,
   minuteLabel,
-  routineBasis,
   type Expectation,
   type Routine,
   type WorldState,
 } from '../../engine/index.ts'
 import { Metric, Pill, epistemicTone, severityColor, statusTone, statusWord } from './Primitives.tsx'
 
-export function EvidenceList({ expectation }: { expectation: Expectation }) {
-  return (
-    <div className="evidence">
-      {expectation.evidence.map((ev, i) => (
-        <div key={i} className={`evidence-row evidence-row--${ev.epistemic}`}>
-          <span className="evidence-kind">{EPISTEMIC_NAME[ev.epistemic]}</span>
-          <span className="evidence-text">{ev.text}</span>
-        </div>
-      ))}
-    </div>
-  )
-}
-
 interface Props {
   world: WorldState
   expectation: Expectation
   routine: Routine
-  expanded?: boolean
   selected?: boolean
   onToggle?: () => void
 }
@@ -37,7 +22,7 @@ interface Props {
  * thing the reader needs in the first half second. Everything underneath exists so they can
  * disagree with it.
  */
-export function FindingCard({ world, expectation: e, routine: r, expanded, selected, onToggle }: Props) {
+export function FindingCard({ world, expectation: e, routine: r, selected, onToggle }: Props) {
   const satisfier = world.observations.find((o) => o.id === e.satisfiedById)
   const links = world.correlations.filter((c) => c.expectationIds.includes(e.id))
 
@@ -61,7 +46,9 @@ export function FindingCard({ world, expectation: e, routine: r, expanded, selec
         {e.status === 'satisfied' && satisfier
           ? `Recorded at ${clockLabel(satisfier.ts)}, inside the expected window.`
           : e.status === 'late' && satisfier
-            ? `Recorded at ${clockLabel(satisfier.ts)}, ${e.latenessMin} minutes later than the learned time.`
+            ? `Recorded at ${clockLabel(satisfier.ts)}, ${Math.abs(e.latenessMin ?? 0)} minutes ${
+                (e.latenessMin ?? 0) >= 0 ? 'later' : 'earlier'
+              } than the learned time. It happened, just off schedule.`
             : e.status === 'pending'
               ? `Normally around ${minuteLabel(r.expectedMinute)}. The window is still open, so there is nothing to report.`
               : e.status === 'uncertain'
@@ -90,24 +77,9 @@ export function FindingCard({ world, expectation: e, routine: r, expanded, selec
         <Metric label="Window" value={`${minuteLabel(r.expectedMinute)} ±${Math.round(r.toleranceMin)}m`} />
       </div>
 
-      {expanded && (
-        <>
-          <EvidenceList expectation={e} />
-          {links.map((c) => (
-            <div key={c.id} className="link-card" style={{ marginTop: 10 }}>
-              <div className="finding-top" style={{ marginBottom: 7 }}>
-                <Pill tone="unknown">{c.kind}</Pill>
-                <Pill tone="quiet">{Math.round(c.strength * 100)}% link</Pill>
-              </div>
-              <p className="link-hypo">{c.hypothesis}</p>
-              <p className="link-basis">{c.basis}</p>
-            </div>
-          ))}
-          <p className="link-basis" style={{ marginTop: 10 }}>
-            Learned, not configured: {routineBasis(r)}.
-          </p>
-        </>
-      )}
+      <span className="finding-more">
+        {links.length > 0 ? `Evidence and ${links.length} link${links.length === 1 ? '' : 's'}` : 'Evidence'}
+      </span>
     </button>
   )
 }

@@ -4,15 +4,16 @@ import {
   clockLabel,
   dayDeparture,
   durationLabel,
-  minuteOfDay,
   relativeLabel,
   routineBasis,
   startOfLocalDay,
   type Expectation,
 } from '../../engine/index.ts'
-import { DEMO_MINUTE_OF_DAY, useStore } from '../../state/store.tsx'
+import { useStore } from '../../state/store.tsx'
 import { DayDial } from '../components/DayDial.tsx'
 import { FindingCard } from '../components/FindingCard.tsx'
+import { FloorPlan } from '../components/FloorPlan.tsx'
+import { Transport } from '../components/Transport.tsx'
 import { Pill, SupportRing } from '../components/Primitives.tsx'
 
 const ORDER: Record<Expectation['status'], number> = {
@@ -22,14 +23,6 @@ const ORDER: Record<Expectation['status'], number> = {
   pending: 3,
   satisfied: 4,
 }
-
-const JUMPS = [
-  { label: '6:00a', m: 360 },
-  { label: '9:00a', m: 540 },
-  { label: '3:30p', m: 930 },
-  { label: '7:45p', m: DEMO_MINUTE_OF_DAY },
-  { label: '10:30p', m: 1350 },
-]
 
 /**
  * The surface a family opens on a phone or a laptop. One question, one screen:
@@ -45,10 +38,13 @@ export function Console() {
     setSurface,
     ghostLayer,
     setGhostLayer,
-    scrubTo,
-    commitScrub,
     consequenceOverrides,
     setConsequence,
+    consoleView,
+    setConsoleView,
+    focusZone,
+    setFocusZone,
+    setInspectId,
   } = useStore()
 
   const today = useMemo(() => {
@@ -59,20 +55,20 @@ export function Console() {
   }, [world])
 
   const routine = (id: string) => world.routines.find((r) => r.id === id)!
+  const inFocus = (e: Expectation) => !focusZone || routine(e.routineId).zone === focusZone
   const missing = today.filter((e) => e.status === 'missing')
   const uncertain = today.filter((e) => e.status === 'uncertain')
   const normal = today.filter((e) => e.status === 'satisfied' || e.status === 'pending')
   const departure = dayDeparture(world)
   const links = world.correlations.filter((c) => c.strength >= 0.35).slice(0, 4)
-  const nowMin = minuteOfDay(world.now)
+  const novelties = world.novelties.filter((n) => {
+    if (!focusZone) return true
+    return world.observations.find((o) => o.id === n.observationId)?.zone === focusZone
+  })
 
   const toggle = (e: Expectation) => {
-    if (selectedId === e.id) {
-      setSelectedId(null)
-      setHighlight({ observationIds: [], expectationIds: [], noveltyIds: [] })
-      return
-    }
     setSelectedId(e.id)
+    setInspectId(e.id)
     const related = world.correlations.filter((c) => c.expectationIds.includes(e.id))
     setHighlight({
       observationIds: [
@@ -85,11 +81,6 @@ export function Console() {
       expectationIds: [e.id, ...related.flatMap((c) => c.expectationIds)],
       noveltyIds: related.flatMap((c) => c.noveltyIds),
     })
-  }
-
-  const jump = (m: number) => {
-    scrubTo(m)
-    commitScrub()
   }
 
   return (
@@ -117,22 +108,44 @@ export function Console() {
         </p>
 
         <div className="stage-grid">
-          <DayDial
-            world={world}
-            highlight={highlight}
-            selectedId={selectedId}
-            onPick={(p) => {
-              if (p.kind === 'expectation') {
-                const e = today.find((x) => x.id === p.id)
-                if (e) toggle(e)
-              } else {
-                setHighlight({ observationIds: [p.id], expectationIds: [], noveltyIds: [] })
-                setSelectedId(null)
-              }
-            }}
-          />
+          <div className="stage-view">
+            {consoleView === 'dial' ? (
+              <DayDial
+                world={world}
+                highlight={highlight}
+                selectedId={selectedId}
+                onPick={(p) => {
+                  if (p.kind === 'expectation') {
+                    const e = today.find((x) => x.id === p.id)
+                    if (e) toggle(e)
+                  } else {
+                    setHighlight({ observationIds: [p.id], expectationIds: [], noveltyIds: [] })
+                    setSelectedId(null)
+                  }
+                }}
+              />
+            ) : (
+              <FloorPlan
+                world={world}
+                highlight={highlight}
+                onPick={(p) => {
+                  const e = today.find((x) => x.id === p.id)
+                  if (e) toggle(e)
+                }}
+              />
+            )}
+          </div>
 
           <div className="readout">
+            <div className="viewswitch" role="group" aria-label="View">
+              <button aria-pressed={consoleView === 'dial'} onClick={() => setConsoleView('dial')}>
+                When
+              </button>
+              <button aria-pressed={consoleView === 'plan'} onClick={() => setConsoleView('plan')}>
+                Where
+              </button>
+            </div>
+
             <div className="stat-row" style={{ margin: 0 }}>
               <Stat value={String(missing.length)} label="Did not happen" tone="expected" />
               <Stat value={String(uncertain.length)} label="Cannot judge" tone="unknown" />
@@ -157,29 +170,7 @@ export function Console() {
               </span>
             </div>
 
-            <div>
-              <div className="section-head" style={{ marginBottom: 9 }}>
-                <h2 className="section-title">Move the clock</h2>
-                <span className="section-note">drag the hand, or jump</span>
-              </div>
-              <div className="jump-row">
-                {JUMPS.map((j) => (
-                  <button
-                    key={j.label}
-                    className="jump"
-                    aria-pressed={Math.abs(nowMin - j.m) < 8}
-                    onClick={() => jump(j.m)}
-                  >
-                    {j.label}
-                  </button>
-                ))}
-              </div>
-              <p className="switch-note" style={{ marginTop: 9 }}>
-                At 9:00a the dose is still an open window and nothing is wrong. At 10:30p the
-                deadbolt becomes the fifth absence. The verdicts are recomputed at whatever moment
-                the hand is on.
-              </p>
-            </div>
+            <Transport />
 
             <div className="legend-stack">
               <span className="legend-item">
@@ -207,6 +198,15 @@ export function Console() {
           </div>
         </div>
 
+        {focusZone && (
+          <button className="focusbar" onClick={() => setFocusZone(null)}>
+            <Pill tone="observed">Filtered</Pill>
+            <span>
+              Showing the {ZONE_NAME[focusZone].toLowerCase()} only. Click to show the whole house.
+            </span>
+          </button>
+        )}
+
         <Section
           title="Findings"
           note="Ranked by consequence, not confidence. Click any card for the evidence."
@@ -214,17 +214,21 @@ export function Console() {
           <div className="cards">
             {today
               .filter((e) => e.status !== 'satisfied' && e.status !== 'pending')
+              .filter(inFocus)
               .map((e) => (
                 <FindingCard
                   key={e.id}
                   world={world}
                   expectation={e}
                   routine={routine(e.routineId)}
-                  expanded={selectedId === e.id}
                   selected={selectedId === e.id}
                   onToggle={() => toggle(e)}
                 />
               ))}
+            {today.filter((e) => e.status !== 'satisfied' && e.status !== 'pending').filter(inFocus)
+              .length === 0 && (
+              <p className="empty">Nothing is outstanding in this part of the house.</p>
+            )}
           </div>
         </Section>
 
@@ -265,7 +269,7 @@ export function Console() {
           note="Scored against this household's own history, not a global idea of suspicious."
         >
           <div className="cards">
-            {world.novelties.map((n) => {
+            {novelties.map((n) => {
               const o = world.observations.find((x) => x.id === n.observationId)!
               return (
                 <button
@@ -295,7 +299,7 @@ export function Console() {
                 </button>
               )
             })}
-            {world.novelties.length === 0 && (
+            {novelties.length === 0 && (
               <p className="empty">Nothing today is unlike the last three weeks.</p>
             )}
           </div>
@@ -306,13 +310,12 @@ export function Console() {
           note="Shown on purpose. A system that only ever reports problems gives you no way to calibrate it."
         >
           <div className="cards">
-            {normal.map((e) => (
+            {normal.filter(inFocus).map((e) => (
               <FindingCard
                 key={e.id}
                 world={world}
                 expectation={e}
                 routine={routine(e.routineId)}
-                expanded={selectedId === e.id}
                 selected={selectedId === e.id}
                 onToggle={() => toggle(e)}
               />

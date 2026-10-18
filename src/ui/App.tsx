@@ -2,6 +2,8 @@ import { useEffect } from 'react'
 import { dayDeparture } from '../engine/index.ts'
 import { StoreProvider, useStore, type Surface } from '../state/store.tsx'
 import { ClockReadout } from './components/DayTimeline.tsx'
+import { EvidenceDrawer } from './components/EvidenceDrawer.tsx'
+import { FlipFeed } from './components/FlipFeed.tsx'
 import { AlexaPlus } from './surfaces/AlexaPlus.tsx'
 import { Console } from './surfaces/Console.tsx'
 import { FireTV } from './surfaces/FireTV.tsx'
@@ -23,21 +25,28 @@ export default function App() {
 }
 
 function Shell() {
-  const { surface, setSurface, world, ghostLayer, setGhostLayer } = useStore()
+  const { surface, setSurface, world, ghostLayer, setGhostLayer, playing, play, pause } = useStore()
   const departure = dayDeparture(world)
 
-  // One key for the product's whole thesis: hide the afterimages and you are
-  // left with exactly what every other system in this category can show you.
+  // Two keys worth having under a thumb during a demo. G is the product's whole
+  // thesis: hide the afterimages and you are left with exactly what every other
+  // system in this category can show you. Space runs the day.
+  //
+  // Space is left alone on Fire TV, where it is the remote's select button.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'g' && e.key !== 'G') return
       const el = document.activeElement
       if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) return
-      setGhostLayer(!ghostLayer)
+      if (e.key === 'g' || e.key === 'G') {
+        setGhostLayer(!ghostLayer)
+      } else if (e.key === ' ' && (surface === 'console' || surface === 'ring')) {
+        e.preventDefault()
+        playing ? pause() : play()
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [ghostLayer, setGhostLayer])
+  }, [ghostLayer, setGhostLayer, surface, playing, play, pause])
 
   return (
     <div className="app">
@@ -111,6 +120,9 @@ function Shell() {
         {surface === 'alexa' && <AlexaPlus />}
         {surface === 'ring' && <RingSim />}
       </main>
+
+      <FlipFeed />
+      <EvidenceDrawer />
     </div>
   )
 }

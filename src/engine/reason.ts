@@ -203,7 +203,9 @@ export function ask(world: WorldState, question: string): Answer {
       named.status === 'satisfied' && obs
         ? `Yes, the ${r.shortLabel} at ${clockLabel(obs.ts)}, which is normal.`
         : named.status === 'late' && obs
-          ? `Yes, but late. The ${r.shortLabel} at ${clockLabel(obs.ts)}, ${named.latenessMin} minutes later than usual.`
+          ? `Yes, but off schedule. The ${r.shortLabel} at ${clockLabel(obs.ts)}, ${Math.abs(
+              named.latenessMin ?? 0,
+            )} minutes ${(named.latenessMin ?? 0) >= 0 ? 'later' : 'earlier'} than usual.`
           : named.status === 'pending'
             ? `Not yet, and that is fine. It is normally around ${minuteLabel(
                 r.expectedMinute,
@@ -484,7 +486,7 @@ function outageBehind(world: WorldState, e: Expectation) {
 function statusTag(s: Expectation['status']): string {
   return {
     missing: 'Did not happen',
-    late: 'Late',
+    late: 'Off schedule',
     satisfied: 'On time',
     pending: 'Still open',
     uncertain: 'Cannot tell',

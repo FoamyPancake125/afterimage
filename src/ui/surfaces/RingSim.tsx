@@ -9,6 +9,7 @@ import {
 import { INJECTABLE, useStore } from '../../state/store.tsx'
 import { DayTimeline } from '../components/DayTimeline.tsx'
 import { DeviceIcon } from '../components/DeviceIcon.tsx'
+import { Transport } from '../components/Transport.tsx'
 import { Legend, Pill } from '../components/Primitives.tsx'
 
 /**
@@ -29,8 +30,6 @@ export function RingSim() {
     inject,
     injected,
     resetSim,
-    clockOffsetMin,
-    setClockOffsetMin,
     outageOn,
     setOutageOn,
     lastChange,
@@ -81,21 +80,11 @@ export function RingSim() {
         <div className="panel-head" style={{ padding: '18px 0 12px' }}>
           <span className="panel-title">Move the clock</span>
         </div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {[
-            { label: '+1 hour', m: clockOffsetMin + 60 },
-            { label: '10:30 PM', m: 165 },
-            { label: '11:59 PM', m: 254 },
-          ].map((b) => (
-            <button key={b.label} className="btn" onClick={() => setClockOffsetMin(b.m)}>
-              {b.label}
-            </button>
-          ))}
-        </div>
+        <Transport />
         <p className="inject-sub" style={{ marginTop: 9 }}>
-          The deadbolt is the one expectation still open. Push the clock past its window and watch
-          it turn from <em style={{ color: 'var(--text-2)', fontStyle: 'normal' }}>still open</em>{' '}
-          into an absence, in real time, from the same inference.
+          Press play and the inference re-runs at every minute of the day. Expectations that sat
+          open all morning turn into absences the moment their windows close, and each change is
+          announced as it happens.
         </p>
 
         <div className="panel-head" style={{ padding: '18px 0 12px' }}>
