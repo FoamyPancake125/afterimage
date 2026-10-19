@@ -181,6 +181,32 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     document.documentElement.dataset.theme = theme
   }, [theme])
 
+  /*
+   * The address bar is read as well as written. Without this the back button
+   * changes the URL and nothing else, which is worse than having no URLs at
+   * all: the link looks like it works and does not.
+   */
+  useEffect(() => {
+    const onNav = () => {
+      const next = readUrl()
+      if (next.surface) setSurface(next.surface)
+      setConsolePage(next.page ?? 'today')
+      setConsoleView(next.view ?? 'dial')
+      setFocusZone(next.zone ?? null)
+      setGhostLayer(next.ghost ?? true)
+      setInspectId(next.inspect ?? null)
+      setClockOffsetMinRaw(
+        next.minute !== undefined && next.minute !== null ? next.minute - DEMO_MINUTE_OF_DAY : 0,
+      )
+    }
+    window.addEventListener('hashchange', onNav)
+    window.addEventListener('popstate', onNav)
+    return () => {
+      window.removeEventListener('hashchange', onNav)
+      window.removeEventListener('popstate', onNav)
+    }
+  }, [])
+
   // View state belongs in the link; preferences belong to the person.
   useEffect(() => {
     writeUrl(

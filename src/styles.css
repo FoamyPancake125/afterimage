@@ -169,6 +169,16 @@ input { font: inherit; color: inherit; }
   background: var(--surface);
 }
 
+.topbar-inner,
+.subnav-inner {
+  display: flex;
+  align-items: center;
+  gap: inherit;
+  width: 100%;
+  max-width: 1760px;
+  margin: 0 auto;
+}
+
 .brand { display: flex; align-items: center; gap: var(--s2); flex-shrink: 0; }
 .brand-glyph { flex-shrink: 0; }
 .brand-mark { font-weight: 600; font-size: 14px; letter-spacing: 0.04em; }
@@ -254,7 +264,22 @@ kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--rule); 
 .subnav-focus { margin-left: auto; font-size: 13px; color: var(--observed); white-space: nowrap; }
 .subnav-focus:hover { text-decoration: underline; text-underline-offset: 3px; }
 
-.page-body { overflow-y: auto; padding: var(--s8) var(--s8) 72px; max-width: 1180px; width: 100%; }
+/*
+ * Fill the window, and only centre once the window is wider than anything
+ * worth reading across. Capping at a fixed measure and leaving the remainder
+ * blank on one side reads as a missing panel rather than as a margin, which is
+ * worse than either filling the space or balancing it.
+ *
+ * Prose inside keeps its own measure in ch, so lines stay readable however
+ * wide the window is; tables and the dial take the room they are given.
+ */
+.page-body {
+  overflow-y: auto;
+  padding: var(--s8) var(--s8) 72px;
+  width: 100%;
+  max-width: 1760px;
+  margin: 0 auto;
+}
 
 .pageintro { margin-bottom: var(--s6); }
 .pageintro-title { font-family: var(--serif); font-weight: 400; font-size: 29px; letter-spacing: -0.012em; margin: 0 0 var(--s2); }
@@ -262,8 +287,12 @@ kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--rule); 
 
 .pagenote { margin: var(--s4) 0 0; font-size: 13px; color: var(--ink-3); line-height: 1.6; max-width: 80ch; }
 
-.routine-list { border-top: 1px solid var(--rule); }
-.notes { border-top: 1px solid var(--rule); }
+.routine-list { border-top: 1px solid var(--rule); max-width: 940px; }
+.notes { border-top: 1px solid var(--rule); max-width: 1000px; }
+.esc-list, .esc-rules { max-width: 1100px; }
+.dt { max-width: 1400px; }
+.toolbar { max-width: 1400px; }
+.week { max-width: 1100px; }
 
 /* ========================================================================== */
 /* Type                                                                       */
@@ -649,7 +678,7 @@ kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--rule); 
 /* Dial                                                                       */
 /* ========================================================================== */
 
-.dial { position: relative; width: 100%; max-width: 480px; aspect-ratio: 1; margin: 0 auto; user-select: none; }
+.dial { position: relative; width: 100%; max-width: 560px; aspect-ratio: 1; margin: 0 auto; user-select: none; }
 .dial-svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .dial-hour { font-size: 12px; fill: var(--ink-3); }
 
@@ -988,8 +1017,8 @@ kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--rule); 
 /* ========================================================================== */
 
 @media (max-width: 1320px) {
-  .stage-grid { grid-template-columns: 1fr; gap: 28px; }
-  .dial { max-width: 420px; }
+  .stage-grid { grid-template-columns: 1fr; gap: var(--s8); }
+  .dial { max-width: 460px; }
 }
 
 @media (max-width: 1180px) {
