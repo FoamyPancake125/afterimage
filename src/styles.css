@@ -119,6 +119,18 @@ body {
 }
 
 button { font: inherit; color: inherit; cursor: pointer; background: none; border: 0; padding: 0; }
+
+/*
+ * One focus treatment for the whole product. Keyboard users get a visible ring
+ * everywhere; mouse users never see it. Offset so it reads as a ring around
+ * the control rather than a border on it.
+ */
+:focus-visible {
+  outline: 2px solid var(--observed);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+.dt-row:focus-visible { outline-offset: -2px; }
 input { font: inherit; color: inherit; }
 
 ::-webkit-scrollbar { width: 11px; height: 11px; }
@@ -1090,8 +1102,40 @@ kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--rule); 
 .dt-bar span { display: block; height: 100%; }
 
 @media (max-width: 1100px) {
-  .dt thead th:nth-child(5), .dt tbody td:nth-child(5),
   .dt thead th:nth-child(6), .dt tbody td:nth-child(6) { display: none; }
+}
+
+/*
+ * Below this a table stops being a table. Six columns in 375px gives every
+ * title four wrapped lines and every number its own cramped column, so the
+ * rows become stacked entries instead: verdict, then what it was, then the
+ * figures on one line carrying the labels the header used to supply.
+ */
+@media (max-width: 700px) {
+  .dt { display: block; }
+  .dt thead { display: none; }
+  .dt tbody { display: block; }
+
+  .dt tbody tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--s1) var(--s4);
+    padding: var(--s3);
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .dt tbody td { display: block; padding: 0; border: 0; text-align: left; }
+  .dt tbody td:first-child { padding-left: 0; }
+  .dt tbody td:nth-child(1), .dt tbody td:nth-child(2) { flex: 0 0 100%; }
+  .dt tbody td:nth-child(n + 3) { flex: 0 0 auto; font-size: 13px; color: var(--ink-2); }
+  .dt tbody td:nth-child(6) { display: block; }
+
+  .dt tbody td[data-label]::before {
+    content: attr(data-label) ' ';
+    color: var(--ink-3);
+  }
+  .dt-sev { justify-content: flex-start; }
+  .dt-title { font-size: 15px; }
 }
 
 /* ========================================================================== */
@@ -1160,13 +1204,66 @@ kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--rule); 
 }
 .palette-count { margin-left: auto; }
 
+/*
+ * Below this the top bar cannot hold a brand, four surfaces and a status
+ * cluster on one line, so it becomes two: identity and state on the first,
+ * navigation on the second, scrolling sideways rather than wrapping into an
+ * unreadable block.
+ */
 @media (max-width: 860px) {
-  .topbar { gap: var(--s4); padding: 0 var(--s4); }
-  .brand-mark { display: none; }
-  .surface-tabs { gap: var(--s4); }
-  .subnav { padding: 0 var(--s4); }
+  .topbar {
+    height: auto;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: var(--s2) var(--s4) 0;
+    gap: var(--s3);
+  }
+  .brand { order: 1; }
+  .topbar-right { order: 2; margin-left: auto; gap: var(--s4); }
+  .surface-tabs { order: 3; width: 100%; height: 38px; overflow-x: auto; gap: var(--s4); }
+
+  /* The departure meter and the date are the first things to go: both are
+     context rather than control, and both are repeated on the page below. */
+  .departure { display: none; }
+  .clock span:not(:first-child) { display: none; }
+
+  .subnav { padding: 0 var(--s4); height: 40px; }
   .page-body { padding: var(--s5) var(--s4) 56px; }
+
+  .stage-grid { margin-top: var(--s5); }
+  .dial { max-width: 310px; }
+
+  /* Figures read as a list when there is no room for a band. */
+  .figures { flex-direction: column; margin-top: var(--s5); }
+  .figure { border-right: 0; border-bottom: 1px solid var(--rule-soft); padding: var(--s3) 0; }
+  .figure:last-child { border-bottom: 0; }
+  .figure:not(:first-child) { padding-left: 0; }
+  .figure-value { font-size: 23px; }
+
+  .pageintro-title, .pagehead-title { font-size: 25px; }
+  .toolbar-search { min-width: 0; width: 100%; }
+  .toolbar-actions { margin-left: 0; }
+
+  .esc-head { grid-template-columns: 1fr auto; row-gap: var(--s1); }
+  .esc-when, .esc-sev { grid-column: 2; }
+  .esc-body { padding-left: var(--s3); }
+
+  .routine-row { grid-template-columns: 1fr; gap: var(--s2); }
+  .routine-weight { justify-items: start; }
+
+  /* The clock gets its own line rather than being squeezed into a column. */
+  .transport-row { flex-wrap: wrap; }
+  .transport-clock { margin-left: 0; order: 9; width: 100%; }
+
+  /* A heading and its note stack rather than fighting for the same line. */
+  .section-head, .panel-head { flex-wrap: wrap; }
+  .section-note, .panel-note { margin-left: 0; text-align: left; flex: 0 0 100%; margin-top: var(--s1); }
+  .toolbar { gap: var(--s3); }
+  .esc-rules { gap: var(--s2) var(--s4); }
 }
+
+/* Narrow enough that the table has to shed columns rather than squeeze. */
+
 
 @media (prefers-reduced-motion: reduce) { .palette { animation: none; } }
 

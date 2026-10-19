@@ -182,8 +182,8 @@ export function FindingsTable({
                             : ''}
                 </span>
               </td>
-              <td className="dt-num">{minuteLabel(r.expectedMinute)}</td>
-              <td className="dt-num">
+              <td className="dt-num" data-label="Expected">{minuteLabel(r.expectedMinute)}</td>
+              <td className="dt-num" data-label="Severity">
                 {e.status === 'satisfied' ? (
                   <span className="dt-muted">0</span>
                 ) : (
@@ -195,8 +195,10 @@ export function FindingsTable({
                   </span>
                 )}
               </td>
-              <td className="dt-num">{Math.round(e.confidence * 100)}%</td>
-              <td className="dt-num">
+              <td className="dt-num" data-label="Confidence">
+                {Math.round(e.confidence * 100)}%
+              </td>
+              <td className="dt-num" data-label="Support">
                 {r.observedDays}/{r.eligibleDays}
               </td>
             </tr>
