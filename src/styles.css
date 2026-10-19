@@ -157,72 +157,38 @@ input { font: inherit; color: inherit; }
 /* Shell                                                                      */
 /* ========================================================================== */
 
-/*
- * Rail on the left, global state across the top, content in the remaining
- * cell. The rail is a fixed 224px because the four entries never change, and
- * a fixed measure keeps the content column from reflowing as surfaces switch.
- */
-.app {
-  height: 100%;
-  display: grid;
-  grid-template-columns: 224px minmax(0, 1fr);
-  grid-template-rows: 52px minmax(0, 1fr);
-}
-
-.rail {
-  grid-row: 1 / -1;
-  border-right: 1px solid var(--rule);
-  background: var(--surface);
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  min-height: 0;
-  overflow-y: auto;
-}
-
-.rail-brand {
-  display: flex;
-  align-items: center;
-  gap: var(--s2);
-  padding: var(--s4) var(--s4) var(--s4);
-  border-bottom: 1px solid var(--rule);
-  height: 52px;
-}
-.brand-glyph { flex-shrink: 0; }
-.brand-mark { display: block; font-weight: 600; font-size: 14px; letter-spacing: 0.04em; line-height: 1.1; }
-.brand-sub { display: block; font-size: 12px; color: var(--ink-3); line-height: 1.3; }
-
-.rail-list { list-style: none; margin: 0; padding: var(--s3) 0; }
-
-.rail-item {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: var(--s2) var(--s4);
-  border-left: 2px solid transparent;
-  transition: background 0.1s, border-color 0.1s;
-}
-.rail-item:hover { background: var(--sunk); }
-.rail-item[aria-current='page'] { background: var(--sunk); border-left-color: var(--ink); }
-
-.rail-label { display: block; font-size: 14px; font-weight: 500; line-height: 1.35; }
-.rail-item[aria-current='page'] .rail-label { font-weight: 600; }
-.rail-hint { display: block; font-size: 12px; color: var(--ink-3); line-height: 1.35; }
-
-.rail-foot { padding: var(--s4); border-top: 1px solid var(--rule); }
-.rail-house { margin: 0 0 var(--s1); font-size: 14px; font-weight: 600; }
-.rail-meta { margin: 0; font-size: 12px; color: var(--ink-3); line-height: 1.5; }
+.app { height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr); }
 
 .topbar {
   display: flex;
   align-items: center;
-  gap: var(--s5);
+  gap: var(--s6);
   padding: 0 var(--s6);
+  height: 52px;
   border-bottom: 1px solid var(--rule);
   background: var(--surface);
-  min-width: 0;
 }
 
-.topbar-title { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.brand { display: flex; align-items: center; gap: var(--s2); flex-shrink: 0; }
+.brand-glyph { flex-shrink: 0; }
+.brand-mark { font-weight: 600; font-size: 14px; letter-spacing: 0.04em; }
+
+/* Primary navigation: tabs on a rule, which is the convention for a handful
+   of peer views and reads as one product rather than four. */
+.surface-tabs { display: flex; gap: var(--s5); align-self: stretch; align-items: center; }
+
+.surface-tab {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  font-size: 14px;
+  color: var(--ink-3);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.12s, border-color 0.12s;
+}
+.surface-tab:hover { color: var(--ink); }
+.surface-tab[aria-current='page'] { color: var(--ink); border-bottom-color: var(--ink); font-weight: 500; }
 
 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: var(--s5); flex-shrink: 0; }
 
@@ -237,16 +203,67 @@ input { font: inherit; color: inherit; }
 .icon-btn:hover { color: var(--ink); }
 .icon-btn--on { color: var(--expected); }
 
-kbd {
-  font-family: var(--mono);
-  font-size: 11px;
-  border: 1px solid var(--rule);
-  border-radius: 2px;
-  padding: 1px 4px;
-  color: var(--ink-3);
-}
+kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--rule); border-radius: 2px; padding: 1px 4px; color: var(--ink-3); }
 
 .stage { overflow: hidden; position: relative; min-width: 0; }
+
+/* ========================================================================== */
+/* Console pages                                                              */
+/* ========================================================================== */
+
+.page { height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr); }
+
+/* Secondary navigation. Each entry is one question, with how many things are
+   waiting under it, so the cost of a click is known before it is paid. */
+.subnav {
+  display: flex;
+  align-items: center;
+  gap: var(--s5);
+  padding: 0 var(--s8);
+  height: 44px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+  overflow-x: auto;
+}
+
+.subnav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  height: 100%;
+  font-size: 13.5px;
+  color: var(--ink-3);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  transition: color 0.12s, border-color 0.12s;
+}
+.subnav-item:hover { color: var(--ink); }
+.subnav-item[aria-current='page'] { color: var(--ink); border-bottom-color: var(--ink); font-weight: 500; }
+
+.subnav-count {
+  font-size: 12px;
+  color: var(--ink-3);
+  background: var(--sunk);
+  border-radius: 2px;
+  padding: 0 5px;
+  line-height: 17px;
+}
+.subnav-item[aria-current='page'] .subnav-count { color: var(--ink); }
+
+.subnav-focus { margin-left: auto; font-size: 13px; color: var(--observed); white-space: nowrap; }
+.subnav-focus:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.page-body { overflow-y: auto; padding: var(--s8) var(--s8) 72px; max-width: 1180px; width: 100%; }
+
+.pageintro { margin-bottom: var(--s6); }
+.pageintro-title { font-family: var(--serif); font-weight: 400; font-size: 29px; letter-spacing: -0.012em; margin: 0 0 var(--s2); }
+.pageintro-note { margin: 0; font-size: 14px; color: var(--ink-3); max-width: 76ch; line-height: 1.55; }
+
+.pagenote { margin: var(--s4) 0 0; font-size: 13px; color: var(--ink-3); line-height: 1.6; max-width: 80ch; }
+
+.routine-list { border-top: 1px solid var(--rule); }
+.notes { border-top: 1px solid var(--rule); }
 
 /* ========================================================================== */
 /* Type                                                                       */
@@ -395,7 +412,7 @@ kbd {
 .figures {
   display: flex;
   gap: 0;
-  margin: 0;
+  margin: var(--s6) 0 0;
   border-top: 1px solid var(--ink);
   border-bottom: 1px solid var(--rule);
 }
@@ -453,14 +470,7 @@ kbd {
 /* Console layout                                                             */
 /* ========================================================================== */
 
-.console { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) 378px; overflow: hidden; }
-.console-main { overflow-y: auto; padding: 26px 30px 64px; }
-.console-side {
-  border-left: 1px solid var(--rule);
-  overflow-y: auto;
-  padding: 26px 22px 64px;
-  background: var(--surface);
-}
+
 
 .stage-grid {
   display: grid;
@@ -639,7 +649,7 @@ kbd {
 /* Dial                                                                       */
 /* ========================================================================== */
 
-.dial { position: relative; width: 100%; max-width: 450px; aspect-ratio: 1; margin: 0 auto; user-select: none; }
+.dial { position: relative; width: 100%; max-width: 480px; aspect-ratio: 1; margin: 0 auto; user-select: none; }
 .dial-svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .dial-hour { font-size: 12px; fill: var(--ink-3); }
 
@@ -983,8 +993,6 @@ kbd {
 }
 
 @media (max-width: 1180px) {
-  .console { grid-template-columns: 1fr; }
-  .console-side { border-left: 0; border-top: 1px solid var(--rule); }
   .alexa { grid-template-columns: 1fr; }
   .alexa-side { display: none; }
   .sim { grid-template-columns: 1fr; }
@@ -1123,13 +1131,12 @@ kbd {
 }
 .palette-count { margin-left: auto; }
 
-@media (max-width: 1000px) {
-  .app { grid-template-columns: 1fr; grid-template-rows: auto auto minmax(0, 1fr); }
-  .rail { grid-row: auto; border-right: 0; border-bottom: 1px solid var(--rule); grid-template-rows: auto; }
-  .rail-list { display: flex; padding: 0; overflow-x: auto; }
-  .rail-item { white-space: nowrap; border-left: 0; border-bottom: 2px solid transparent; }
-  .rail-item[aria-current='page'] { border-left: 0; border-bottom-color: var(--ink); }
-  .rail-hint, .rail-foot { display: none; }
+@media (max-width: 860px) {
+  .topbar { gap: var(--s4); padding: 0 var(--s4); }
+  .brand-mark { display: none; }
+  .surface-tabs { gap: var(--s4); }
+  .subnav { padding: 0 var(--s4); }
+  .page-body { padding: var(--s5) var(--s4) 56px; }
 }
 
 @media (prefers-reduced-motion: reduce) { .palette { animation: none; } }

@@ -32,6 +32,7 @@ import { readPrefs, readUrl, writePrefs, writeUrl } from './url.ts'
 
 export type Surface = 'console' | 'firetv' | 'alexa' | 'ring'
 export type ConsoleView = 'dial' | 'plan'
+export type ConsolePage = 'today' | 'findings' | 'escalation' | 'patterns' | 'unexplained'
 export type Theme = 'light' | 'dark'
 
 export type { InjectableEvent }
@@ -75,6 +76,8 @@ interface Store {
   setSurface: (s: Surface) => void
   consoleView: ConsoleView
   setConsoleView: (v: ConsoleView) => void
+  consolePage: ConsolePage
+  setConsolePage: (p: ConsolePage) => void
 
   highlight: Highlight
   setHighlight: (h: Highlight) => void
@@ -146,6 +149,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const [surface, setSurface] = useState<Surface>(initialUrl.surface ?? 'console')
   const [consoleView, setConsoleView] = useState<ConsoleView>(initialUrl.view ?? 'dial')
+  const [consolePage, setConsolePage] = useState<ConsolePage>(initialUrl.page ?? 'today')
   const [highlight, setHighlight] = useState<Highlight>(NO_HIGHLIGHT)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [inspectId, setInspectId] = useState<string | null>(initialUrl.inspect ?? null)
@@ -182,6 +186,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     writeUrl(
       {
         surface,
+        page: consolePage,
         view: consoleView,
         zone: focusZone,
         minute: DEMO_MINUTE_OF_DAY + clockOffsetMin,
@@ -190,7 +195,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       },
       DEMO_MINUTE_OF_DAY,
     )
-  }, [surface, consoleView, focusZone, clockOffsetMin, ghostLayer, inspectId])
+  }, [surface, consolePage, consoleView, focusZone, clockOffsetMin, ghostLayer, inspectId])
 
   useEffect(() => {
     writePrefs({ theme, weights: consequenceOverrides, acks })
@@ -418,6 +423,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setSurface,
     consoleView,
     setConsoleView,
+    consolePage,
+    setConsolePage,
     highlight,
     setHighlight,
     selectedId,

@@ -276,10 +276,18 @@ tractable have to exist before the data outgrows the screen. The day exports as
 JSON or CSV, because a finding that cannot leave the interface is a finding
 that stays trapped in a demo.
 
-**A rail, a top bar, and a keyboard path.** Primary navigation on the left
-because the four entries are device surfaces that sit side by side as views of
-one household; global state across the top; and everything reachable from
-Cmd+K, which layers a fast path over the visible controls rather than
+**One question per screen.** The console is five pages rather than one scroll:
+what the day looked like, what is outstanding, who gets told, what the house
+has learned, and what has no precedent. Everything used to be stacked on a
+single view with a sidebar beside it, which meant the screen was always
+answering five questions at once and none of them clearly. Navigating costs a
+click, which is cheaper than reading past four sections to reach the one you
+wanted, and each tab carries how many things are waiting under it so the cost
+is known before it is paid.
+
+**Two rows of tabs and a keyboard path.** Surfaces on the top row, console
+sections on the second, global state on the right, and everything reachable
+from Cmd+K, which layers a fast path over the visible controls rather than
 replacing them. Spacing is a 4px grid throughout.
 
 The type is Libre Franklin, a Franklin Gothic and therefore the voice of

@@ -17,13 +17,6 @@ const NAV: { id: Surface; label: string; hint: string }[] = [
   { id: 'ring', label: 'Ring', hint: 'Devices and stream' },
 ]
 
-const TITLE: Record<Surface, string> = {
-  console: 'Console',
-  firetv: 'Fire TV',
-  alexa: 'Alexa+',
-  ring: 'Ring',
-}
-
 export default function App() {
   return (
     <StoreProvider>
@@ -59,16 +52,9 @@ function Shell() {
 
   return (
     <div className="app">
-      {/*
-        Primary navigation on the left, global state across the top. The four
-        entries are device surfaces rather than app sections, and a rail makes
-        that legible in a way a row of tabs does not: they sit side by side as
-        four views of one household, with the household's own details under
-        them as permanent context.
-      */}
-      <nav className="rail" aria-label="Surfaces">
-        <div className="rail-brand">
-          <svg className="brand-glyph" width="18" height="18" viewBox="0 0 16 16" aria-hidden>
+      <header className="topbar">
+        <div className="brand">
+          <svg className="brand-glyph" width="17" height="17" viewBox="0 0 16 16" aria-hidden>
             <circle cx="5.4" cy="8" r="2.1" fill="var(--ink)" />
             <circle
               cx="11"
@@ -80,42 +66,22 @@ function Shell() {
               strokeDasharray="2.4 2.4"
             />
           </svg>
-          <span>
-            <span className="brand-mark">AFTERIMAGE</span>
-            <span className="brand-sub">absence intelligence</span>
-          </span>
+          <span className="brand-mark">AFTERIMAGE</span>
         </div>
 
-        <ul className="rail-list">
+        <nav className="surface-tabs" aria-label="Surfaces">
           {NAV.map((t) => (
-            <li key={t.id}>
-              <button
-                className="rail-item"
-                aria-current={surface === t.id ? 'page' : undefined}
-                onClick={() => setSurface(t.id)}
-              >
-                <span className="rail-label">{t.label}</span>
-                <span className="rail-hint">{t.hint}</span>
-              </button>
-            </li>
+            <button
+              key={t.id}
+              className="surface-tab"
+              aria-current={surface === t.id ? 'page' : undefined}
+              onClick={() => setSurface(t.id)}
+              title={t.hint}
+            >
+              {t.label}
+            </button>
           ))}
-        </ul>
-
-        <div className="rail-foot">
-          <p className="rail-house">
-            {world.household.residentName}, {world.household.residentAge}
-          </p>
-          <p className="rail-meta">
-            {world.household.devices.length} Ring devices · {world.routines.length} learned routines
-          </p>
-          <p className="rail-meta">
-            {world.observations.length.toLocaleString()} events over twenty-one days
-          </p>
-        </div>
-      </nav>
-
-      <header className="topbar">
-        <h1 className="topbar-title">{TITLE[surface]}</h1>
+        </nav>
 
         <div className="topbar-right">
           <button

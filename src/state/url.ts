@@ -1,5 +1,5 @@
 import type { Zone } from '../engine/index.ts'
-import type { ConsoleView, Surface, Theme } from './store.tsx'
+import type { ConsolePage, ConsoleView, Surface, Theme } from './store.tsx'
 
 /**
  * View state in the address bar.
@@ -15,6 +15,8 @@ import type { ConsoleView, Surface, Theme } from './store.tsx'
  */
 export interface UrlState {
   surface: Surface
+  /** Sub-page within the console, which is where most of the depth lives. */
+  page: ConsolePage
   view: ConsoleView
   zone: Zone | null
   /** Minute of day, when the clock has been moved off its default. */
@@ -24,6 +26,7 @@ export interface UrlState {
 }
 
 const SURFACES: Surface[] = ['console', 'firetv', 'alexa', 'ring']
+const PAGES: ConsolePage[] = ['today', 'findings', 'escalation', 'patterns', 'unexplained']
 
 export function readUrl(): Partial<UrlState> {
   if (typeof window === 'undefined') return {}
@@ -32,7 +35,9 @@ export function readUrl(): Partial<UrlState> {
   const params = new URLSearchParams(q ?? '')
   const out: Partial<UrlState> = {}
 
-  if (SURFACES.includes(path as Surface)) out.surface = path as Surface
+  const [seg, sub] = path.split('/')
+  if (SURFACES.includes(seg as Surface)) out.surface = seg as Surface
+  if (PAGES.includes(sub as ConsolePage)) out.page = sub as ConsolePage
   const view = params.get('view')
   if (view === 'dial' || view === 'plan') out.view = view
   const zone = params.get('zone')
@@ -54,7 +59,8 @@ export function writeUrl(s: UrlState, defaultMinute: number) {
   if (!s.ghost) params.set('ghost', '0')
   if (s.inspect) params.set('finding', s.inspect)
   const q = params.toString()
-  const next = `#/${s.surface}${q ? `?${q}` : ''}`
+  const path = s.surface === 'console' && s.page !== 'today' ? `${s.surface}/${s.page}` : s.surface
+  const next = `#/${path}${q ? `?${q}` : ''}`
   if (next !== window.location.hash) {
     window.history.replaceState(null, '', next)
   }
