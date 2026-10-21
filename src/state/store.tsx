@@ -410,13 +410,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const ackedIds = useMemo(() => new Set(acks.map((a) => a.expectationId)), [acks])
   const notifications = useMemo(() => escalations(world, acks), [world, acks])
 
-  const acknowledge = useCallback((expectationId: string, reason: string) => {
-    actionLabel.current = 'Acknowledged'
-    setAcks((prev) => [
-      ...prev.filter((a) => a.expectationId !== expectationId),
-      { expectationId, reason, at: Date.now() },
-    ])
-  }, [])
+  /*
+   * Stamped with the household clock, not the wall clock. The engine suppresses
+   * a notification whose send time falls after the acknowledgement, and every
+   * send time is a time on the demo day. A real timestamp compares a Tuesday in
+   * the scenario against whenever the demo happens to be running, so an
+   * explained finding went on escalating for anyone who opened this after the
+   * notifications had already gone out.
+   */
+  const acknowledge = useCallback(
+    (expectationId: string, reason: string) => {
+      actionLabel.current = 'Acknowledged'
+      setAcks((prev) => [
+        ...prev.filter((a) => a.expectationId !== expectationId),
+        { expectationId, reason, at: now },
+      ])
+    },
+    [now],
+  )
 
   const unacknowledge = useCallback((expectationId: string) => {
     actionLabel.current = 'Acknowledgement removed'

@@ -5,3 +5,6 @@ dist/
 # Per-machine Claude Code state. launch.json is shared on purpose: it is how the
 # dev server is started for the Fire TV and browser previews.
 .claude/settings.local.json
+
+# The recorded submission video and its stills. Rebuilt by demo/film.mjs.
+demo/out/
